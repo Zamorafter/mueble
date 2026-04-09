@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo Completo • CasaPiel Las Mercedes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;700&family=Outfit:wght@300;400;500;600&display=swap');
+        body { background-color:#030303; font-family:'Outfit',sans-serif; color:#e4e4e7; overflow-x:hidden; }
+        h1,h2,h3,h4,h5,h6 { font-family:'Playfair Display',serif; }
+        .text-gradient-gold { background-image:linear-gradient(to right,#fbbf24,#d4af37,#fef08a); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        .glass { background:rgba(20,20,20,0.4); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(255,255,255,0.05); }
+        .glass-card { background:linear-gradient(145deg,rgba(30,30,30,0.6) 0%,rgba(10,10,10,0.8) 100%); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.08); transition:all 0.5s cubic-bezier(0.4,0,0.2,1); }
+        .glass-card:hover { transform:translateY(-6px); border-color:rgba(212,175,55,0.3); box-shadow:0 20px 40px -10px rgba(212,175,55,0.15); }
+        .btn-premium { position:relative; overflow:hidden; transition:all 0.4s ease; z-index:1; }
+        .btn-premium::before { content:''; position:absolute; top:0; left:-100%; width:100%; height:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent); transition:all 0.6s ease; z-index:-1; }
+        .btn-premium:hover::before { left:100%; }
+        ::-webkit-scrollbar { width:8px; } ::-webkit-scrollbar-track { background:#030303; } ::-webkit-scrollbar-thumb { background:#333; border-radius:4px; }
+        #cart-sidebar { transition:transform 0.4s cubic-bezier(0.4,0,0.2,1); }
+        #cart-sidebar.open { transform:translateX(0) !important; }
+        #cart-badge { display:none; } #cart-badge.visible { display:flex; }
+        .filter-btn.active { background:rgba(212,175,55,0.2); border-color:rgba(212,175,55,0.6); color:#fbbf24; }
+        #toast { transition:all 0.4s ease; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="fixed inset-0 pointer-events-none z-0">
+        <div class="absolute top-0 right-0 w-[50vw] h-[50vh] bg-yellow-600/5 rounded-full blur-[150px]"></div>
+        <div class="absolute bottom-0 left-0 w-[50vw] h-[50vh] bg-yellow-900/5 rounded-full blur-[150px]"></div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast" class="fixed top-24 right-6 z-[300] bg-zinc-900 border border-yellow-500/40 text-white px-5 py-3 rounded-2xl flex items-center gap-x-3 shadow-xl opacity-0 pointer-events-none">
+        <i class="fa-solid fa-check-circle text-yellow-500"></i>
+        <span id="toast-msg" class="text-sm font-medium">Producto agregado</span>
+    </div>
+
+    <!-- CARRITO LATERAL -->
+    <div id="cart-sidebar" class="fixed top-0 right-0 h-full w-full sm:w-96 bg-zinc-950 border-l border-white/10 z-[200] flex flex-col" style="transform:translateX(100%);">
+        <div class="flex items-center justify-between px-6 py-5 border-b border-white/10">
+            <h3 class="font-heading text-xl text-white">Tu Pedido</h3>
+            <button onclick="toggleCart()" class="text-zinc-400 hover:text-white text-2xl"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div id="cart-items" class="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+            <p id="cart-empty" class="text-zinc-500 text-center mt-16 text-sm">Tu carrito está vacío.<br><span class="text-yellow-500">Agrega productos del catálogo ↓</span></p>
+        </div>
+        <div class="px-6 py-6 border-t border-white/10 space-y-4">
+            <div class="flex justify-between items-center">
+                <span class="text-xs uppercase tracking-widest text-zinc-400">Total estimado</span>
+                <span id="cart-total" class="text-white text-xl font-heading">$0</span>
+            </div>
+            <p class="text-zinc-500 text-xs">* El pago se realiza en tienda. Tu pedido llegará por WhatsApp.</p>
+            <button onclick="sendCartToWhatsApp()" class="btn-premium w-full bg-[#25D366] text-white py-4 rounded-2xl text-sm font-semibold tracking-widest uppercase flex items-center justify-center gap-x-3">
+                <i class="fa-brands fa-whatsapp text-xl"></i> Enviar pedido
+            </button>
+        </div>
+    </div>
+    <div id="cart-overlay" class="fixed inset-0 bg-black/60 z-[199] hidden" onclick="toggleCart()"></div>
+
+    <!-- NAVBAR -->
+    <nav class="sticky top-0 z-50 w-full px-6 py-4">
+        <div class="max-w-7xl mx-auto">
+            <div class="glass rounded-full px-6 py-4 flex items-center justify-between border border-white/10">
+                <a href="index.html" class="flex items-center gap-x-3">
+                    <div class="w-9 h-9 rounded-full flex items-center justify-center text-xl border border-yellow-500/30 bg-black/50">🛋️</div>
+                    <span class="font-heading text-lg text-white">CasaPiel</span>
+                </a>
+                <div class="flex items-center gap-x-4">
+                    <a href="index.html" class="text-zinc-400 hover:text-white text-xs uppercase tracking-widest hidden sm:block">← Inicio</a>
+                    <button onclick="toggleCart()" class="relative flex items-center gap-x-2 text-xs uppercase tracking-widest bg-yellow-500 text-black px-5 py-2.5 rounded-full font-semibold hover:bg-white transition-colors">
+                        <i class="fa-solid fa-bag-shopping"></i>
+                        <span class="hidden sm:block">Mi pedido</span>
+                        <span id="cart-badge" class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-bold items-center justify-center">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- PAGE HEADER -->
+    <div class="max-w-7xl mx-auto px-6 pt-12 pb-8">
+        <div class="mb-2 text-xs uppercase tracking-[0.2em] text-yellow-500">Selección 2026</div>
+        <h1 class="text-4xl md:text-6xl font-heading mb-4">Catálogo <span class="text-gradient-gold">Completo</span></h1>
+        <p class="text-zinc-400 font-light max-w-xl">Descubre toda nuestra colección de sofás y muebles italianos disponibles en showroom. Agrega los que te interesen a tu pedido y coordina la visita.</p>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="max-w-7xl mx-auto px-6 mb-10">
+        <div class="flex flex-wrap gap-3">
+            <button onclick="filterCat('todos')" class="filter-btn active text-xs uppercase tracking-widest border border-white/10 px-5 py-2 rounded-full text-zinc-400 hover:text-white transition-colors" data-cat="todos">Todos</button>
+            <button onclick="filterCat('sofás')" class="filter-btn text-xs uppercase tracking-widest border border-white/10 px-5 py-2 rounded-full text-zinc-400 hover:text-white transition-colors" data-cat="sofás">Sofás</button>
+            <button onclick="filterCat('sillones')" class="filter-btn text-xs uppercase tracking-widest border border-white/10 px-5 py-2 rounded-full text-zinc-400 hover:text-white transition-colors" data-cat="sillones">Sillones</button>
+            <button onclick="filterCat('modulares')" class="filter-btn text-xs uppercase tracking-widest border border-white/10 px-5 py-2 rounded-full text-zinc-400 hover:text-white transition-colors" data-cat="modulares">Modulares</button>
+            <button onclick="filterCat('accesorios')" class="filter-btn text-xs uppercase tracking-widest border border-white/10 px-5 py-2 rounded-full text-zinc-400 hover:text-white transition-colors" data-cat="accesorios">Accesorios</button>
+        </div>
+    </div>
+
+    <!-- BÚSQUEDA -->
+    <div class="max-w-7xl mx-auto px-6 mb-10">
+        <div class="relative max-w-md">
+            <i class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 text-sm"></i>
+            <input id="search-input" type="text" placeholder="Buscar producto..." oninput="renderCatalog()" class="w-full bg-zinc-900 border border-white/10 rounded-full pl-11 pr-5 py-3 text-white text-sm focus:outline-none focus:border-yellow-500 transition-colors">
+        </div>
+    </div>
+
+    <!-- PRODUCTOS GRID -->
+    <div class="max-w-7xl mx-auto px-6 pb-32">
+        <div id="catalog-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+        <p id="no-results" class="hidden text-center text-zinc-500 mt-20">No se encontraron productos.</p>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="bg-[#020202] py-8 border-t border-white/5">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-x-2 opacity-40"><span>🛋️</span><span class="font-heading">CasaPiel</span></div>
+            <p class="text-zinc-700 text-xs">© 2026 CasaPiel Las Mercedes</p>
+        </div>
+    </footer>
+
+    <a href="https://wa.me/584241437204" target="_blank" class="fixed bottom-6 right-6 z-[99] bg-[#25D366] text-white w-14 h-14 rounded-full flex items-center justify-center text-3xl shadow-[0_0_20px_rgba(37,211,102,0.4)] hover:scale-110 transition-transform">
+        <i class="fa-brands fa-whatsapp"></i>
+    </a>
+
+    <script src="shared.js"></script>
+    <script>
+        let currentCat = 'todos';
+
+        function filterCat(cat) {
+            currentCat = cat;
+            document.querySelectorAll('.filter-btn').forEach(b => {
+                b.classList.toggle('active', b.dataset.cat === cat);
+            });
+            renderCatalog();
+        }
+
+        function renderCatalog() {
+            const query = (document.getElementById('search-input')?.value || '').toLowerCase();
+            let products = getProducts();
+            if (currentCat !== 'todos') products = products.filter(p => p.category === currentCat);
+            if (query) products = products.filter(p => p.name.toLowerCase().includes(query) || p.desc.toLowerCase().includes(query));
+
+            const grid = document.getElementById('catalog-grid');
+            const noResults = document.getElementById('no-results');
+            grid.innerHTML = products.map(p => productCardHTML(p)).join('');
+            noResults.classList.toggle('hidden', products.length > 0);
+        }
+
+        window.addEventListener('load', () => { renderCart(); renderCatalog(); });
+    </script>
+</body>
+</html>
