@@ -94,6 +94,9 @@
                 <button onclick="showTab('add-product')" class="tab-btn text-xs uppercase tracking-widest border border-white/10 px-5 py-2.5 rounded-full text-zinc-400 transition-colors" data-tab="add-product">
                     <i class="fa-solid fa-plus mr-2"></i>Agregar Producto
                 </button>
+                <button onclick="showTab('settings')" class="tab-btn text-xs uppercase tracking-widest border border-white/10 px-5 py-2.5 rounded-full text-zinc-400 transition-colors" data-tab="settings">
+                    <i class="fa-solid fa-gear mr-2"></i>Configuración
+                </button>
             </div>
 
             <!-- TAB: PEDIDOS -->
@@ -177,17 +180,45 @@
                     <p id="form-error" class="text-red-400 text-xs hidden">Por favor completa todos los campos requeridos.</p>
                 </div>
             </div>
+
+            <!-- TAB: CONFIGURACIÓN -->
+            <div id="tab-settings" class="hidden max-w-md">
+                <h2 class="text-2xl font-heading mb-8 text-white">Configuración del Panel</h2>
+                <div class="glass-card rounded-3xl p-8 border border-white/5 space-y-6">
+                    <div>
+                        <h3 class="text-white font-medium mb-4">Cambiar Contraseña</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label>Nueva Contraseña</label>
+                                <input id="new-password" type="password" placeholder="Mínimo 6 caracteres">
+                            </div>
+                            <div>
+                                <label>Confirmar Nueva Contraseña</label>
+                                <input id="confirm-password" type="password" placeholder="Repite la contraseña">
+                            </div>
+                            <button onclick="updatePassword()" class="w-full bg-white/10 border border-white/10 text-white py-3 rounded-xl font-semibold text-sm hover:bg-white hover:text-black transition-all">
+                                Guardar Nueva Contraseña
+                            </button>
+                            <p id="settings-msg" class="text-xs text-center hidden"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script src="shared.js"></script>
     <script>
-        const ADMIN_PASSWORD = 'casapiel2026';
+        const DEFAULT_PASS = 'casapiel2026';
 
         // ── AUTH ──────────────────────────────────────
+        function getAdminPassword() {
+            return localStorage.getItem('casapiel_admin_pass') || DEFAULT_PASS;
+        }
+
         function checkLogin() {
             const pass = document.getElementById('login-pass').value;
-            if (pass === ADMIN_PASSWORD) {
+            if (pass === getAdminPassword()) {
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('admin-panel').classList.remove('hidden');
                 loadAdmin();
@@ -204,15 +235,44 @@
 
         // ── TABS ──────────────────────────────────────
         function showTab(tab) {
-            ['orders','products','add-product'].forEach(t => {
-                document.getElementById('tab-' + t).classList.add('hidden');
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            ['orders','products','add-product','settings'].forEach(t => {
+                const el = document.getElementById('tab-' + t);
+                if (el) el.classList.add('hidden');
+                const btn = document.querySelector(`[data-tab="${t}"]`);
+                if (btn) btn.classList.remove('active');
             });
             document.getElementById('tab-' + tab).classList.remove('hidden');
             document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
             if (tab === 'orders') renderOrders();
             if (tab === 'products') renderAdminProducts();
             if (tab === 'add-product') { clearForm(); document.getElementById('form-title').textContent = 'Agregar Producto'; }
+        }
+
+        function updatePassword() {
+            const newPass = document.getElementById('new-password').value;
+            const confirmPass = document.getElementById('confirm-password').value;
+            const msgEl = document.getElementById('settings-msg');
+
+            msgEl.classList.remove('hidden', 'text-green-400', 'text-red-400');
+
+            if (newPass.length < 6) {
+                msgEl.textContent = 'La contraseña debe tener al menos 6 caracteres.';
+                msgEl.classList.add('text-red-400');
+                return;
+            }
+
+            if (newPass !== confirmPass) {
+                msgEl.textContent = 'Las contraseñas no coinciden.';
+                msgEl.classList.add('text-red-400');
+                return;
+            }
+
+            localStorage.setItem('casapiel_admin_pass', newPass);
+            msgEl.textContent = 'Contraseña actualizada con éxito.';
+            msgEl.classList.add('text-green-400');
+            
+            document.getElementById('new-password').value = '';
+            document.getElementById('confirm-password').value = '';
         }
 
         // ── STATS ─────────────────────────────────────
