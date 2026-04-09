@@ -18,6 +18,10 @@
         input:focus,textarea:focus,select:focus { border-color:#d4af37; }
         label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.1em; color:#71717a; font-weight:500; display:block; margin-bottom:4px; }
         .status-badge { font-size:0.6rem; padding:2px 8px; border-radius:999px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; }
+        
+        /* Password Visibility Toggle */
+        .toggle-pass { cursor: pointer; color: #555; transition: color 0.2s; z-index: 10; padding: 5px; }
+        .toggle-pass:hover { color: #fbbf24; }
     </style>
 </head>
 <body class="min-h-screen">
@@ -33,7 +37,10 @@
             <div class="space-y-4">
                 <div>
                     <label>Contraseña</label>
-                    <input id="login-pass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')checkLogin()">
+                    <div class="relative flex items-center">
+                        <input id="login-pass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')checkLogin()" class="pr-12">
+                        <i class="fa-solid fa-eye toggle-pass absolute right-4 text-zinc-500 hover:text-yellow-500" onclick="togglePassVisibility('login-pass', this)" title="Mostrar contraseña"></i>
+                    </div>
                 </div>
                 <button onclick="checkLogin()" class="w-full bg-yellow-500 text-black py-3 rounded-xl font-semibold text-sm hover:bg-white transition-colors">
                     Ingresar
@@ -190,11 +197,17 @@
                         <div class="space-y-4">
                             <div>
                                 <label>Nueva Contraseña</label>
-                                <input id="new-password" type="password" placeholder="Mínimo 6 caracteres">
+                                <div class="relative flex items-center">
+                                    <input id="new-password" type="password" placeholder="Mínimo 6 caracteres" class="pr-12">
+                                    <i class="fa-solid fa-eye toggle-pass absolute right-4 text-zinc-500 hover:text-yellow-500" onclick="togglePassVisibility('new-password', this)" title="Mostrar contraseña"></i>
+                                </div>
                             </div>
                             <div>
                                 <label>Confirmar Nueva Contraseña</label>
-                                <input id="confirm-password" type="password" placeholder="Repite la contraseña">
+                                <div class="relative flex items-center">
+                                    <input id="confirm-password" type="password" placeholder="Repite la contraseña" class="pr-12">
+                                    <i class="fa-solid fa-eye toggle-pass absolute right-4 text-zinc-500 hover:text-yellow-500" onclick="togglePassVisibility('confirm-password', this)" title="Mostrar contraseña"></i>
+                                </div>
                             </div>
                             <button onclick="updatePassword()" class="w-full bg-white/10 border border-white/10 text-white py-3 rounded-xl font-semibold text-sm hover:bg-white hover:text-black transition-all">
                                 Guardar Nueva Contraseña
@@ -231,6 +244,19 @@
             document.getElementById('login-screen').classList.remove('hidden');
             document.getElementById('admin-panel').classList.add('hidden');
             document.getElementById('login-pass').value = '';
+        }
+
+        function togglePassVisibility(inputId, iconEl) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                iconEl.classList.replace('fa-eye', 'fa-eye-slash');
+                iconEl.title = 'Ocultar contraseña';
+            } else {
+                input.type = 'password';
+                iconEl.classList.replace('fa-eye-slash', 'fa-eye');
+                iconEl.title = 'Mostrar contraseña';
+            }
         }
 
         // ── TABS ──────────────────────────────────────
