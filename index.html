@@ -9,44 +9,142 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;700&family=Outfit:wght@300;400;500;600&display=swap');
-        :root { --gold-light:#fef08a; --gold-mid:#d4af37; --gold-dark:#b48600; }
-        body { background-color:#030303; font-family:'Outfit',sans-serif; color:#e4e4e7; overflow-x:hidden; }
-        h1,h2,h3,h4,h5,h6,.font-heading { font-family:'Playfair Display',serif; }
-        .reveal { opacity:0; transform:translateY(40px); transition:all 1s cubic-bezier(0.16,1,0.3,1); }
-        .reveal.active { opacity:1; transform:translateY(0); }
-        .reveal-delay-1 { transition-delay:150ms; }
-        .reveal-delay-2 { transition-delay:300ms; }
-        .reveal-delay-3 { transition-delay:450ms; }
-        .text-gradient-gold { background-image:linear-gradient(to right,#fbbf24,#d4af37,#fef08a); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
-        .glass { background:rgba(20,20,20,0.4); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(255,255,255,0.05); box-shadow:0 4px 30px rgba(0,0,0,0.1); }
-        .glass-card { background:linear-gradient(145deg,rgba(30,30,30,0.6) 0%,rgba(10,10,10,0.8) 100%); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.08); transition:all 0.5s cubic-bezier(0.4,0,0.2,1); }
-        .glass-card:hover { transform:translateY(-8px); border-color:rgba(212,175,55,0.3); box-shadow:0 20px 40px -10px rgba(212,175,55,0.15); }
-        .hero-bg { background-image:linear-gradient(to bottom,rgba(5,5,5,0.4),#030303),url('https://picsum.photos/id/1015/1920/1080'); background-size:cover; background-position:center; background-attachment:fixed; }
-        .nav-link { position:relative; text-transform:uppercase; letter-spacing:0.1em; font-size:0.75rem; transition:color 0.3s ease; }
-        .nav-link:after { content:''; position:absolute; width:0; height:1px; bottom:-4px; left:0; background-color:var(--gold-mid); transition:width 0.3s cubic-bezier(0.25,0.8,0.25,1); }
-        .nav-link:hover:after { width:100%; }
-        .btn-premium { position:relative; overflow:hidden; transition:all 0.4s ease; z-index:1; }
-        .btn-premium::before { content:''; position:absolute; top:0; left:-100%; width:100%; height:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent); transition:all 0.6s ease; z-index:-1; }
-        .btn-premium:hover::before { left:100%; }
-        .btn-premium:hover { box-shadow:0 0 20px rgba(212,175,55,0.4); transform:translateY(-2px); }
-        ::-webkit-scrollbar { width:8px; }
-        ::-webkit-scrollbar-track { background:#030303; }
-        ::-webkit-scrollbar-thumb { background:#333; border-radius:4px; }
-        ::-webkit-scrollbar-thumb:hover { background:#d4af37; }
-        @keyframes marquee { 0% { transform:translateX(0%); } 100% { transform:translateX(calc(-50% - 0.5rem)); } }
-        .animate-marquee { width:max-content; animation:marquee 30s linear infinite; }
-        #cart-sidebar { transition:transform 0.4s cubic-bezier(0.4,0,0.2,1); }
-        #cart-sidebar.open { transform:translateX(0) !important; }
-        .star-rating { display:flex; gap:4px; flex-direction:row-reverse; justify-content:flex-end; }
-        .star-rating input { display:none; }
-        .star-rating label { cursor:pointer; font-size:1.8rem; color:#444; transition:color 0.2s; }
-        .star-rating label:hover,.star-rating label:hover ~ label,.star-rating input:checked ~ label { color:#d4af37; }
-        .review-card { animation:fadeSlideIn 0.5s ease forwards; }
-        @keyframes fadeSlideIn { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
-        #cart-badge { display:none; }
-        #cart-badge.visible { display:flex; }
-        /* Toast */
-        #toast { transition:all 0.4s ease; }
+        :root { 
+            --gold-light: #fef08a; 
+            --gold-mid: #d4af37; 
+            --gold-dark: #b48600; 
+            --premium-black: #030303;
+            --zinc-900: #18181b;
+        }
+        
+        body { 
+            background-color: var(--premium-black); 
+            font-family: 'Outfit', sans-serif; 
+            color: #e4e4e7; 
+            overflow-x: hidden; 
+            line-height: 1.6;
+        }
+
+        h1, h2, h3, h4, h5, h6, .font-heading { 
+            font-family: 'Playfair Display', serif; 
+            letter-spacing: -0.01em;
+        }
+
+        /* Enhanced Reveal Animations */
+        .reveal { 
+            opacity: 0; 
+            transform: translateY(30px); 
+            transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), transform 1.2s cubic-bezier(0.16, 1, 0.3, 1); 
+            will-change: transform, opacity;
+        }
+        .reveal.active { 
+            opacity: 1; 
+            transform: translateY(0); 
+        }
+
+        /* Gold Text Gradient & Shine */
+        .text-gradient-gold { 
+            background: linear-gradient(to right, #fbbf24, #d4af37, #fef08a, #d4af37, #fbbf24);
+            background-size: 200% auto;
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            background-clip: text;
+            animation: shine 8s linear infinite;
+        }
+        @keyframes shine {
+            to { background-position: 200% center; }
+        }
+
+        /* Glassmorphism Refined */
+        .glass { 
+            background: rgba(10, 10, 10, 0.6); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px); 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4); 
+        }
+
+        .glass-card { 
+            background: linear-gradient(135deg, rgba(30, 30, 30, 0.4) 0%, rgba(10, 10, 10, 0.7) 100%); 
+            backdrop-filter: blur(15px); 
+            border: 1px solid rgba(255, 255, 255, 0.05); 
+            transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1); 
+        }
+        .glass-card:hover { 
+            transform: translateY(-10px) scale(1.01); 
+            border-color: rgba(212, 175, 55, 0.3); 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 5px 15px rgba(212, 175, 55, 0.05); 
+        }
+
+        /* Hero Animation */
+        .hero-bg { 
+            background-image: linear-gradient(to bottom, rgba(3,3,3,0.3), var(--premium-black)), url('https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1920&auto=format&fit=crop'); 
+            background-size: cover; 
+            background-position: center; 
+            background-attachment: fixed; 
+            animation: slowZoom 30s linear infinite alternate;
+        }
+        @keyframes slowZoom {
+            from { background-size: 100% 100%; }
+            to { background-size: 110% 110%; }
+        }
+
+        .nav-link { 
+            position: relative; 
+            text-transform: uppercase; 
+            letter-spacing: 0.15em; 
+            font-size: 0.7rem; 
+            font-weight: 500;
+            transition: all 0.3s ease; 
+        }
+        .nav-link:after { 
+            content: ''; 
+            position: absolute; 
+            width: 0; 
+            height: 1px; 
+            bottom: -6px; 
+            left: 0; 
+            background-color: var(--gold-mid); 
+            transition: width 0.4s cubic-bezier(1, 0, 0, 1); 
+        }
+        .nav-link:hover:after { width: 100%; }
+        .nav-link:hover { color: #fff; }
+
+        /* Premium Buttons */
+        .btn-premium { 
+            position: relative; 
+            overflow: hidden; 
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1); 
+            z-index: 1; 
+        }
+        .btn-premium::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 0; height: 100%;
+            background: rgba(255,255,255,0.1);
+            transition: width 0.3s ease;
+            z-index: -1;
+        }
+        .btn-premium:hover::after { width: 100%; }
+        .btn-premium:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--premium-black); }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--gold-mid); }
+
+        /* Marquee Optimization */
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(calc(-50% - 1rem)); } }
+        .animate-marquee { display: flex; gap: 2rem; width: max-content; animation: marquee 40s linear infinite; will-change: transform; }
+
+        /* Cart & Toast */
+        #cart-sidebar { transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: -20px 0 60px rgba(0,0,0,0.8); }
+        #cart-sidebar.open { transform: translateX(0) !important; }
+        #toast { transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+
+        /* Utility */
+        .section-tag { font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3em; color: var(--gold-mid); margin-bottom: 1rem; display: block; }
     </style>
 </head>
 <body class="antialiased">
@@ -58,9 +156,14 @@
     </div>
 
     <!-- TOAST NOTIFICATION -->
-    <div id="toast" class="fixed top-24 right-6 z-[300] bg-zinc-900 border border-yellow-500/40 text-white px-5 py-3 rounded-2xl flex items-center gap-x-3 shadow-xl opacity-0 pointer-events-none">
-        <i class="fa-solid fa-check-circle text-yellow-500"></i>
-        <span id="toast-msg" class="text-sm font-medium">Producto agregado</span>
+    <div id="toast" class="fixed top-24 right-6 z-[300] glass px-6 py-4 rounded-2xl flex items-center gap-x-4 shadow-2xl opacity-0 translate-x-12 pointer-events-none transition-all duration-500">
+        <div class="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-500">
+            <i class="fa-solid fa-check"></i>
+        </div>
+        <div>
+            <p class="text-xs uppercase tracking-widest text-zinc-500 font-bold mb-0.5">Éxito</p>
+            <p id="toast-msg" class="text-sm font-medium text-white">Producto añadido</p>
+        </div>
     </div>
 
     <!-- CARRITO LATERAL -->
@@ -89,23 +192,22 @@
     <nav class="fixed w-full z-50 transition-all duration-500" id="navbar">
         <div class="max-w-7xl mx-auto px-6">
             <div class="glass mt-4 rounded-full px-6 py-4 flex items-center justify-between border border-white/10 relative z-10">
-                <div class="flex items-center gap-x-3 cursor-pointer" onclick="window.scrollTo(0,0)">
-                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-2xl border border-yellow-500/30 bg-black/50 shadow-[0_0_15px_rgba(212,175,55,0.2)]">🛋️</div>
-                    <h1 class="text-xl font-heading font-medium tracking-wide text-white">CasaPiel</h1>
+                <div class="flex items-center gap-x-3 cursor-pointer group" onclick="window.scrollTo(0,0)">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-2xl border border-yellow-500/30 bg-black/50 shadow-[0_0_20px_rgba(212,175,55,0.15)] group-hover:scale-110 transition-transform duration-500">🛋️</div>
+                    <h1 class="text-xl font-heading font-medium tracking-tighter text-white">Casa<span class="text-yellow-500">Piel</span></h1>
                 </div>
-                <div class="hidden md:flex items-center gap-x-8">
-                    <a href="#nosotros" class="nav-link text-zinc-300 hover:text-white">Nosotros</a>
-                    <a href="#servicios" class="nav-link text-zinc-300 hover:text-white">Servicios</a>
-                    <a href="#coleccion" class="nav-link text-zinc-300 hover:text-white">Colección</a>
-                    <a href="#galeria" class="nav-link text-zinc-300 hover:text-white">Showroom</a>
-                    <a href="#opiniones" class="nav-link text-zinc-300 hover:text-white">Opiniones</a>
-                    <a href="#contacto" class="nav-link text-zinc-300 hover:text-white">Contacto</a>
+                <div class="hidden lg:flex items-center gap-x-10">
+                    <a href="#nosotros" class="nav-link text-zinc-400">Historia</a>
+                    <a href="#servicios" class="nav-link text-zinc-400">Servicios</a>
+                    <a href="#coleccion" class="nav-link text-zinc-400">Colección</a>
+                    <a href="#galeria" class="nav-link text-zinc-400">Showroom</a>
+                    <a href="#opiniones" class="nav-link text-zinc-400">Reseñas</a>
                 </div>
                 <div class="flex items-center gap-x-4">
-                    <button onclick="toggleCart()" class="relative flex items-center gap-x-2 text-xs uppercase tracking-widest bg-yellow-500 text-black px-5 py-2.5 rounded-full font-semibold hover:bg-white transition-colors duration-300">
-                        <i class="fa-solid fa-bag-shopping"></i>
-                        <span class="hidden sm:block">Mi pedido</span>
-                        <span id="cart-badge" class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-bold items-center justify-center">0</span>
+                    <button onclick="toggleCart()" class="relative group flex items-center gap-x-3 text-[10px] uppercase font-bold tracking-[0.2em] bg-white text-black px-6 py-3 rounded-full hover:bg-yellow-500 transition-all duration-500">
+                        <i class="fa-solid fa-bag-shopping text-sm"></i>
+                        <span class="hidden sm:block">Mi Pedido</span>
+                        <span id="cart-badge" class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-600 text-white text-[9px] flex items-center justify-center border-2 border-black">0</span>
                     </button>
                     <button onclick="toggleMobileMenu()" class="md:hidden text-zinc-300 hover:text-white">
                         <i class="fa-solid fa-bars text-xl" id="menu-icon"></i>
@@ -131,17 +233,20 @@
         <div class="absolute inset-0 bg-black/30 backdrop-blur-[2px]"></div>
         <div class="relative z-10 max-w-7xl mx-auto px-6 text-center mt-20">
             <div class="reveal">
-                <span class="inline-block py-1 px-4 rounded-full border border-yellow-500/30 bg-black/40 text-yellow-500/80 text-xs tracking-[0.2em] uppercase mb-6 backdrop-blur-md">Milano • Caracas</span>
+                <span class="section-tag">Colección Exclusiva • Milano Caracas</span>
             </div>
-            <h1 class="reveal reveal-delay-1 text-5xl md:text-7xl lg:text-8xl font-heading text-white leading-tight mb-6">
-                El arte del <br/><span class="text-gradient-gold italic">confort italiano</span>
+            <h1 class="reveal reveal-delay-1 text-6xl md:text-8xl font-heading text-white leading-[1.1] mb-8">
+                El arte del <br/><span class="text-gradient-gold italic">lujo italiano</span>
             </h1>
-            <p class="reveal reveal-delay-2 text-lg md:text-2xl text-zinc-400 font-light max-w-2xl mx-auto mb-12">
-                Pieles nobles y diseño de autor convergen en Las Mercedes. Una experiencia de lujo para tu hogar.
+            <p class="reveal reveal-delay-2 text-lg md:text-2xl text-zinc-400 font-light max-w-3xl mx-auto mb-16 leading-relaxed">
+                Pieles seleccionadas a mano y diseño arquitectónico convergen en Las Mercedes. Redefina el concepto de confort en su hogar.
             </p>
-            <div class="reveal reveal-delay-3 flex flex-col sm:flex-row items-center justify-center gap-6">
-                <a href="catalogo.html" class="btn-premium bg-gradient-to-r from-yellow-600 to-yellow-400 text-black px-10 py-4 rounded-full text-sm font-semibold tracking-widest uppercase w-full sm:w-auto">
-                    <i class="fa-solid fa-store mr-2"></i>Explorar Catálogo
+            <div class="reveal reveal-delay-3 flex flex-col sm:flex-row items-center justify-center gap-8">
+                <a href="catalogo.html" class="btn-premium px-12 py-5 rounded-full text-[11px] font-bold tracking-[0.3em] uppercase bg-yellow-500 text-black hover:bg-white">
+                    Explorar Catálogo
+                </a>
+                <a href="#nosotros" class="group flex items-center gap-x-4 text-[11px] font-bold tracking-[0.3em] uppercase text-white hover:text-yellow-500 transition-colors">
+                    Nuestra Historia <i class="fa-solid fa-arrow-right-long group-hover:translate-x-2 transition-transform"></i>
                 </a>
             </div>
         </div>
@@ -154,13 +259,8 @@
     <!-- NOSOTROS -->
     <section id="nosotros" class="py-32 relative z-10">
         <div class="max-w-7xl mx-auto px-6">
-            <div class="grid md:grid-cols-2 gap-12 md:gap-20 items-center">
+            <div class="grid lg:grid-cols-2 gap-20 items-center">
                 <div class="reveal relative">
-                    <div class="absolute -top-10 -left-10 w-40 h-40 bg-yellow-500/10 blur-3xl rounded-full"></div>
-                    <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=800&auto=format&fit=crop" alt="Muebles de Piel Italiana" class="rounded-[2rem] w-full h-80 md:h-[600px] object-cover grayscale-[20%] hover:grayscale-0 transition-all duration-700 shadow-2xl border border-white/5">
-                </div>
-                <div class="reveal reveal-delay-1">
-                    <h2 class="text-3xl md:text-5xl font-heading mb-8 leading-tight">25 años vistiendo de <span class="text-gradient-gold">lujo y elegancia</span> los hogares caraqueños.</h2>
                     <p class="text-lg text-zinc-400 font-light leading-relaxed mb-8">Cada pieza en <strong>CasaPiel Las Mercedes</strong> es importada directamente de Italia. Tapicerías de cuero natural, terminaciones meticulosas y el confort incomparable que solo el diseño italiano puede brindar.</p>
                     <div class="glass-card p-6 rounded-2xl inline-flex items-center gap-x-6 border-l-4 border-l-yellow-500">
                         <div>
@@ -175,24 +275,32 @@
         </div>
     </section>
 
-    <!-- SERVICIOS -->
-    <section id="servicios" class="py-20 relative z-10 bg-black/40 border-y border-white/5">
+    <!-- SERVICIOS LUXURY -->
+    <section id="servicios" class="py-32 relative z-10 bg-black/60 border-y border-white/5">
         <div class="max-w-7xl mx-auto px-6">
-            <div class="grid md:grid-cols-3 gap-8">
-                <div class="glass-card p-10 rounded-3xl reveal">
-                    <div class="w-14 h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-yellow-500 text-xl mb-6"><i class="fa-solid fa-gem"></i></div>
-                    <h3 class="text-xl font-heading mb-4 text-white">Asesoría de Autor</h3>
-                    <p class="text-zinc-400 text-sm font-light leading-relaxed">Nuestros interioristas te guiarán en nuestro showroom para encontrar la pieza ideal.</p>
+            <div class="grid md:grid-cols-3 gap-12">
+                <div class="reveal">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-zinc-800 to-black border border-white/10 flex items-center justify-center text-yellow-500 text-2xl mb-8 shadow-2xl">
+                        <i class="fa-solid fa-gem"></i>
+                    </div>
+                    <h3 class="text-2xl font-heading mb-4 text-white">Interiorismo de Autor</h3>
+                    <p class="text-zinc-500 text-sm font-light leading-relaxed">Nuestros asesores expertos transforman sus visiones en realidades tangibles, seleccionando piezas que definen el carácter de su hogar.</p>
                 </div>
-                <div class="glass-card p-10 rounded-3xl reveal reveal-delay-1">
-                    <div class="w-14 h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-yellow-500 text-xl mb-6"><i class="fa-solid fa-truck-fast"></i></div>
-                    <h3 class="text-xl font-heading mb-4 text-white">Entrega White Glove</h3>
-                    <p class="text-zinc-400 text-sm font-light leading-relaxed">Llevamos y ensamblamos tu sofá directamente en tu sala, cuidando cada detalle.</p>
+                
+                <div class="reveal reveal-delay-1">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-zinc-800 to-black border border-white/10 flex items-center justify-center text-yellow-500 text-2xl mb-8 shadow-2xl">
+                        <i class="fa-solid fa-crown"></i>
+                    </div>
+                    <h3 class="text-2xl font-heading mb-4 text-white">Entrega Guante Blanco</h3>
+                    <p class="text-zinc-500 text-sm font-light leading-relaxed">Un servicio logístico impecable que cuida cada pulgada de su nueva adquisición, desde el muelle de carga hasta su estancia principal.</p>
                 </div>
-                <div class="glass-card p-10 rounded-3xl reveal reveal-delay-2">
-                    <div class="w-14 h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-yellow-500 text-xl mb-6"><i class="fa-solid fa-shield-halved"></i></div>
-                    <h3 class="text-xl font-heading mb-4 text-white">Garantía Premium</h3>
-                    <p class="text-zinc-400 text-sm font-light leading-relaxed">Respaldamos la calidad suprema con garantías extensas de fábrica europea.</p>
+
+                <div class="reveal reveal-delay-2">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-zinc-800 to-black border border-white/10 flex items-center justify-center text-yellow-500 text-2xl mb-8 shadow-2xl">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <h3 class="text-2xl font-heading mb-4 text-white">Garantía Europea</h3>
+                    <p class="text-zinc-500 text-sm font-light leading-relaxed">Respaldamos la excelencia de nuestra manufactura italiana con protocolos de garantía que superan los estándares de la industria.</p>
                 </div>
             </div>
         </div>
@@ -237,42 +345,46 @@
 
     <!-- OPINIONES -->
     <section id="opiniones" class="py-32 relative z-10 bg-black/40 border-y border-white/5">
-        <div class="max-w-4xl mx-auto px-6">
-            <div class="text-center mb-16 reveal">
-                <span class="text-xs uppercase tracking-[0.2em] text-yellow-500 mb-2 block">Comunidad CasaPiel</span>
-                <h2 class="text-3xl md:text-5xl font-heading">Lo que dicen nuestros <span class="text-gradient-gold">clientes</span></h2>
+        <div class="max-w-5xl mx-auto px-6">
+            <div class="text-center mb-20 reveal">
+                <span class="section-tag">Experiencias Reales</span>
+                <h2 class="text-4xl md:text-6xl font-heading mb-6">La voz de la <span class="text-gradient-gold">excelencia</span></h2>
+                <p class="text-zinc-500 font-light max-w-xl mx-auto">Nuestros clientes son los mejores embajadores de la calidad italiana en Caracas.</p>
             </div>
-            <div class="glass-card p-8 rounded-3xl mb-12 reveal">
-                <h3 class="text-xl font-heading mb-6 text-white">Deja tu opinión</h3>
-                <form onsubmit="submitReview(event)" class="space-y-5">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                        <div class="space-y-1">
-                            <label class="text-[10px] uppercase tracking-widest text-zinc-500 font-medium">Nombre</label>
-                            <input id="review-name" type="text" required placeholder="Tu nombre" class="w-full bg-black/50 border-b border-white/10 px-4 py-3 text-white focus:outline-none focus:border-yellow-500 transition-colors rounded-t-lg">
-                        </div>
-                        <div class="space-y-1">
-                            <label class="text-[10px] uppercase tracking-widest text-zinc-500 font-medium">Producto adquirido</label>
-                            <input id="review-product" type="text" placeholder="Ej: Siena Reclinable" class="w-full bg-black/50 border-b border-white/10 px-4 py-3 text-white focus:outline-none focus:border-yellow-500 transition-colors rounded-t-lg">
-                        </div>
+            
+            <div class="grid lg:grid-cols-5 gap-12">
+                <!-- Formulario -->
+                <div class="lg:col-span-2 reveal">
+                    <div class="glass-card p-8 rounded-[2rem] border border-white/5 sticky top-32">
+                        <h3 class="text-xl font-heading mb-6 text-white text-center">Comparta su Experiencia</h3>
+                        <form onsubmit="submitReview(event)" class="space-y-4">
+                            <input id="review-name" type="text" required placeholder="Su Nombre" class="w-full bg-black/40 border border-white/10 px-5 py-3 rounded-xl text-sm focus:border-yellow-500 transition-colors">
+                            <input id="review-product" type="text" placeholder="Pieza Seleccionada" class="w-full bg-black/40 border border-white/10 px-5 py-3 rounded-xl text-sm focus:border-yellow-500 transition-colors">
+                            
+                            <div class="flex justify-center gap-2 py-2">
+                                <div class="star-rating">
+                                    <input type="radio" name="rating" id="star5" value="5"><label for="star5">★</label>
+                                    <input type="radio" name="rating" id="star4" value="4"><label for="star4">★</label>
+                                    <input type="radio" name="rating" id="star3" value="3"><label for="star3">★</label>
+                                    <input type="radio" name="rating" id="star2" value="2"><label for="star2">★</label>
+                                    <input type="radio" name="rating" id="star1" value="1"><label for="star1">★</label>
+                                </div>
+                            </div>
+
+                            <textarea id="review-comment" required rows="4" placeholder="Su mensaje..." class="w-full bg-black/40 border border-white/10 px-5 py-3 rounded-xl text-sm focus:border-yellow-500 transition-colors resize-none"></textarea>
+                            
+                            <button type="submit" class="w-full bg-white text-black py-4 rounded-xl text-[10px] font-bold tracking-[0.2em] uppercase hover:bg-yellow-500 transition-all shadow-xl">
+                                Publicar Reseña
+                            </button>
+                        </form>
                     </div>
-                    <div class="space-y-2">
-                        <label class="text-[10px] uppercase tracking-widest text-zinc-500 font-medium">Calificación</label>
-                        <div class="star-rating">
-                            <input type="radio" name="rating" id="star5" value="5"><label for="star5">★</label>
-                            <input type="radio" name="rating" id="star4" value="4"><label for="star4">★</label>
-                            <input type="radio" name="rating" id="star3" value="3"><label for="star3">★</label>
-                            <input type="radio" name="rating" id="star2" value="2"><label for="star2">★</label>
-                            <input type="radio" name="rating" id="star1" value="1"><label for="star1">★</label>
-                        </div>
-                    </div>
-                    <div class="space-y-1">
-                        <label class="text-[10px] uppercase tracking-widest text-zinc-500 font-medium">Tu comentario</label>
-                        <textarea id="review-comment" required rows="3" placeholder="Cuéntanos tu experiencia..." class="w-full bg-black/50 border-b border-white/10 px-4 py-3 text-white focus:outline-none focus:border-yellow-500 transition-colors rounded-t-lg resize-none"></textarea>
-                    </div>
-                    <button type="submit" class="btn-premium w-full bg-yellow-500 text-black py-4 rounded-xl text-sm font-semibold tracking-widest uppercase hover:bg-white">Publicar Opinión</button>
-                </form>
+                </div>
+
+                <!-- Lista -->
+                <div id="reviews-list" class="lg:col-span-3 space-y-6 reveal reveal-delay-1">
+                    <!-- Dinámico -->
+                </div>
             </div>
-            <div id="reviews-list" class="space-y-6"></div>
         </div>
     </section>
 
@@ -375,18 +487,29 @@
         function renderReviewsList() {
             const container = document.getElementById('reviews-list');
             const defaultReviews = [
-                { name:'Eduardo Betancourt', product:'Colección Italiana', stars:5, comment:'Amplia tienda de muebles de piel de excelente calidad, bonitos diseños y gran variedad.' },
-                { name:'Danieluchis Daniela', product:'Sofá Modular', stars:5, comment:'Me encantó. Son muebles de calidad increíble, superaron mis expectativas.' }
+                { name:'Eduardo Betancourt', product:'Colección Italiana', stars:5, comment:'Amplia tienda de muebles de piel de excelente calidad, bonitos diseños y gran variedad. Muy buena atención y asesoría.' },
+                { name:'Danieluchis Daniela', product:'Sofá Modular', stars:5, comment:'Me encantó. Son muebles de calidad increíble, superaron mis expectativas.' },
+                { name:'Carlos Rivas', product:'Venezia Seccional', stars:5, comment:'La asesoría de autor fue clave para mi sala. Un servicio impecable en Las Mercedes.' }
             ];
             const stored = JSON.parse(localStorage.getItem('casapiel_reviews') || '[]');
             const all = [...stored, ...defaultReviews];
             container.innerHTML = all.map(r => `
-                <div class="review-card glass-card rounded-2xl p-6 border border-white/5">
-                    <div class="flex items-start justify-between mb-3">
-                        <div><p class="text-white font-medium">${r.name}</p>${r.product ? `<p class="text-zinc-500 text-xs">${r.product}</p>` : ''}</div>
-                        <span class="text-yellow-400 text-lg">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}</span>
+                <div class="review-card glass-card rounded-3xl p-8 border border-white/5 hover:border-yellow-500/20 transition-all duration-500">
+                    <div class="flex items-start justify-between mb-6">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-500 to-yellow-700 flex items-center justify-center text-black font-bold text-lg">
+                                ${r.name.charAt(0)}
+                            </div>
+                            <div>
+                                <p class="text-white font-heading text-lg leading-none mb-1">${r.name}</p>
+                                ${r.product ? `<p class="text-zinc-600 text-[10px] uppercase tracking-widest font-bold">${r.product}</p>` : ''}
+                            </div>
+                        </div>
+                        <div class="text-yellow-500 text-sm flex gap-0.5">
+                            ${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}
+                        </div>
                     </div>
-                    <p class="text-zinc-300 text-sm font-light">"${r.comment}"</p>
+                    <p class="text-zinc-400 text-sm font-light italic leading-relaxed">"${r.comment}"</p>
                 </div>`).join('');
         }
 

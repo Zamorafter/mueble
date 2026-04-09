@@ -33,20 +33,22 @@ function saveCart() {
 function toggleCart() {
     const sidebar = document.getElementById('cart-sidebar');
     const overlay = document.getElementById('cart-overlay');
+    if (!sidebar) return;
     sidebar.classList.toggle('open');
-    overlay.classList.toggle('hidden');
+    if (overlay) overlay.classList.toggle('hidden');
 }
 
 function showToast(msg) {
     const toast = document.getElementById('toast');
     const toastMsg = document.getElementById('toast-msg');
+    if (!toast) return;
     toastMsg.textContent = msg;
-    toast.style.opacity = '1';
-    toast.style.pointerEvents = 'auto';
+    toast.classList.remove('opacity-0', 'translate-x-12', 'pointer-events-none');
+    toast.classList.add('opacity-100', 'translate-x-0', 'pointer-events-auto');
     setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.pointerEvents = 'none';
-    }, 2500);
+        toast.classList.add('opacity-0', 'translate-x-12', 'pointer-events-none');
+        toast.classList.remove('opacity-100', 'translate-x-0', 'pointer-events-auto');
+    }, 3000);
 }
 
 function addToCart(name, desc, price) {
@@ -55,7 +57,7 @@ function addToCart(name, desc, price) {
     else cart.push({ name, desc, price, qty: 1 });
     saveCart();
     renderCart();
-    showToast(`"${name}" agregado al pedido`);
+    showToast(`"${name}" añadido al pedido`);
 }
 
 function removeFromCart(name) {
@@ -82,7 +84,13 @@ function renderCart() {
     const totalQty = cart.reduce((s, i) => s + i.qty, 0);
     const totalPrice = cart.reduce((s, i) => s + i.price * i.qty, 0);
 
-    if (badge) { badge.textContent = totalQty; badge.classList.toggle('visible', totalQty > 0); }
+    if (badge) {
+        badge.textContent = totalQty;
+        badge.classList.toggle('visible', totalQty > 0);
+        // Pequeña animación de salto al actualizar
+        badge.classList.add('scale-125');
+        setTimeout(() => badge.classList.remove('scale-125'), 200);
+    }
     if (totalEl) totalEl.textContent = '$' + totalPrice.toLocaleString();
     if (empty) empty.style.display = cart.length === 0 ? 'block' : 'none';
 
@@ -114,7 +122,6 @@ function sendCartToWhatsApp() {
     const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
     msg += `\n*Total estimado: $${total.toLocaleString()}*\n\nQuiero confirmar disponibilidad y coordinar el pago en tienda. ¡Gracias!`;
 
-    // Guardar orden
     const orders = JSON.parse(localStorage.getItem('casapiel_orders') || '[]');
     orders.unshift({ id: Date.now(), items: [...cart], total, date: new Date().toLocaleString('es-VE'), status: 'Pendiente' });
     localStorage.setItem('casapiel_orders', JSON.stringify(orders));
@@ -122,7 +129,6 @@ function sendCartToWhatsApp() {
     window.open('https://wa.me/584241437204?text=' + encodeURIComponent(msg), '_blank');
 }
 
-// ── PRODUCT CARD HTML ─────────────────────────
 function productCardHTML(p) {
     const safeName = p.name.replace(/'/g, "\\'");
     const safeDesc = p.desc.replace(/'/g, "\\'");
@@ -130,22 +136,20 @@ function productCardHTML(p) {
     <div class="glass-card rounded-3xl overflow-hidden group">
         <div class="relative overflow-hidden aspect-[4/3]">
             <img src="${p.img}" alt="${p.name}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" onerror="this.src='https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=800&auto=format&fit=crop'">
-            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            <div class="absolute top-4 right-4 bg-black/60 backdrop-blur-md border border-yellow-500/30 text-yellow-400 text-xs px-3 py-1 rounded-full font-medium">$${p.price.toLocaleString()}</div>
-            <div class="absolute bottom-6 left-6 right-6 translate-y-10 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-500">
-                <button onclick="addToCart('${safeName}','${safeDesc}',${p.price})" class="w-full bg-yellow-500 text-black py-3 rounded-full text-xs uppercase tracking-widest font-bold hover:bg-white transition-colors">
-                    <i class="fa-solid fa-bag-shopping mr-2"></i>Agregar al pedido
+            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+            <div class="absolute top-4 left-4">
+                <span class="bg-black/60 backdrop-blur-md text-white text-[9px] uppercase font-bold tracking-widest px-3 py-1 rounded-full border border-white/10">${p.category}</span>
+            </div>
+            <div class="absolute top-4 right-4 bg-yellow-500 text-black text-[11px] px-3 py-1 rounded-full font-bold shadow-lg">$${p.price.toLocaleString()}</div>
+            <div class="absolute bottom-6 left-6 right-6 translate-y-12 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-700">
+                <button onclick="addToCart('${safeName}','${safeDesc}',${p.price})" class="w-full bg-white text-black py-4 rounded-2xl text-[10px] uppercase font-bold tracking-[0.2em] shadow-xl hover:bg-yellow-500 transition-colors">
+                    Añadir al Pedido
                 </button>
             </div>
         </div>
-        <div class="p-6 flex justify-between items-start">
-            <div>
-                <h3 class="text-xl font-heading mb-1">${p.name}</h3>
-                <p class="text-zinc-500 font-light text-xs leading-relaxed">${p.desc}</p>
-            </div>
-            <button onclick="addToCart('${safeName}','${safeDesc}',${p.price})" class="w-10 h-10 rounded-full border border-yellow-500/30 text-yellow-500 hover:bg-yellow-500 hover:text-black transition-colors flex items-center justify-center flex-shrink-0 ml-4">
-                <i class="fa-solid fa-plus text-sm"></i>
-            </button>
+        <div class="p-6">
+            <h3 class="text-xl font-heading text-white mb-2 group-hover:text-yellow-500 transition-colors">${p.name}</h3>
+            <p class="text-zinc-500 font-light text-xs leading-relaxed line-clamp-2">${p.desc}</p>
         </div>
     </div>`;
 }
