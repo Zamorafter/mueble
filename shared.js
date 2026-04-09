@@ -117,13 +117,29 @@ function renderCart() {
 
 function sendCartToWhatsApp() {
     if (cart.length === 0) { alert('Tu carrito está vacío.'); return; }
-    let msg = '🛋️ *Pedido CasaPiel Las Mercedes*\n\n';
-    cart.forEach(item => { msg += `• ${item.name} x${item.qty} — $${(item.price * item.qty).toLocaleString()}\n`; });
-    const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
-    msg += `\n*Total estimado: $${total.toLocaleString()}*\n\nQuiero confirmar disponibilidad y coordinar el pago en tienda. ¡Gracias!`;
+    
+    const totalPrice = cart.reduce((s, i) => s + i.price * i.qty, 0);
+    const orderId = Math.floor(Math.random() * 9000) + 1000;
+    
+    let msg = '🛋️ *CASAPIEL • LAS MERCEDES*\n';
+    msg += '──────────────────────────\n';
+    msg += `🧾 *ORDEN DE PEDIDO #${orderId}*\n\n`;
+    
+    msg += '📦 *DETALLE DE PIEZAS:*\n';
+    cart.forEach((item, index) => {
+        msg += `${index + 1}. *${item.name}*\n`;
+        msg += `   _Cant: ${item.qty} | Subtotal: $${(item.price * item.qty).toLocaleString()}_\n`;
+    });
+    
+    msg += '\n──────────────────────────\n';
+    msg += `💰 *TOTAL ESTIMADO: $${totalPrice.toLocaleString()}*\n`;
+    msg += '──────────────────────────\n\n';
+    
+    msg += '📍 _Hola, he armado este pedido desde su catálogo online. Quiero confirmar disponibilidad y coordinar el pago/visita a la tienda._\n\n';
+    msg += '✨ *¡Gracias por su atención!*';
 
     const orders = JSON.parse(localStorage.getItem('casapiel_orders') || '[]');
-    orders.unshift({ id: Date.now(), items: [...cart], total, date: new Date().toLocaleString('es-VE'), status: 'Pendiente' });
+    orders.unshift({ id: orderId, items: [...cart], total: totalPrice, date: new Date().toLocaleString('es-VE'), status: 'Pendiente' });
     localStorage.setItem('casapiel_orders', JSON.stringify(orders));
 
     window.open('https://wa.me/584241437204?text=' + encodeURIComponent(msg), '_blank');
