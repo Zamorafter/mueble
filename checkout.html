@@ -206,6 +206,10 @@
                             document.getElementById('success-view').classList.remove('hidden');
                             document.getElementById('success-view').classList.add('flex');
                             document.getElementById('download-btn').href = '/api/download-course';
+                            
+                            // DISPARAR DESCARGA AUTOMÁTICA
+                            window.location.href = '/api/download-course';
+                            
                             sessionStorage.removeItem('premium_cursos_cart');
                         }
                     } catch (err) {
