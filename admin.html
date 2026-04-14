@@ -23,12 +23,11 @@
     <!-- LOGIN -->
     <div id="login-screen" class="fixed inset-0 bg-zinc-950 flex items-center justify-center z-[999]">
         <div class="glass rounded-3xl p-10 w-full max-w-sm mx-4 border border-white/10 text-center">
-            <h1 class="text-3xl font-heading text-white mb-2">Admin Panel</h1>
-            <p class="text-indigo-400 text-sm mb-8">Acceso Restringido</p>
-            <input id="login-pass" type="password" placeholder="Contraseña de Admin" class="mb-6">
-            <button onclick="checkLogin()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-500 transition-colors">Ingresar</button>
+            <h1 class="text-3xl font-heading text-white mb-2">Panel de Control</h1>
+            <p class="text-indigo-400 text-sm mb-8">GlobalTrade Academy</p>
+            <input id="login-pass" type="password" placeholder="Escribe la contraseña aquí" class="mb-6">
+            <button onclick="checkLogin()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-500 transition-colors">Ingresar al Panel</button>
             <p id="login-error" class="text-red-500 text-xs mt-4 hidden">Contraseña Incorrecta</p>
-            <p class="text-[10px] text-zinc-600 mt-6">Hint: admin123</p>
         </div>
     </div>
 
@@ -53,7 +52,7 @@
     </div>
 
     <script>
-        const ADMIN_PASS = 'admin123';
+        const ADMIN_PASS = 'admin';
 
         function checkLogin() {
             const val = document.getElementById('login-pass').value;
