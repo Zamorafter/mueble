@@ -143,53 +143,71 @@
             `;
         });
 
+        let checkStatusInterval = null;
+
         async function verifyPayment(e) {
             e.preventDefault();
             const bank = document.getElementById('bank-select').value;
             const ref = document.getElementById('ref-input').value;
-            
+            const totalUSD = cart.reduce((s, i) => s + i.price * i.qty, 0);
+
             if (ref.length !== 6) return;
 
             document.getElementById('loading').classList.remove('hidden');
             document.getElementById('error-msg').classList.add('hidden');
 
             try {
-                // Realizar peticion al backend real Express
-                const res = await fetch('/api/checkout', {
+                // 1. Crear la orden en el backend
+                const response = await fetch('/api/orders', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ bank, ref, cart })
+                    body: JSON.stringify({ bank, ref, cart, total: totalUSD })
                 });
+                const orderData = await response.json();
 
-                const data = await res.json();
-                
-                setTimeout(() => {
-                    document.getElementById('loading').classList.add('hidden');
-                    if (data.success || res.status === 200) {
-                        document.getElementById('success-view').classList.remove('hidden');
-                        document.getElementById('success-view').classList.add('flex');
-                        // Configurar link de descarga
-                        document.getElementById('download-btn').href = data.downloadLink || '/api/download-course';
-                        // Limpiar carrito
-                        sessionStorage.removeItem('premium_cursos_cart');
-                    } else {
-                        throw new Error(data.message || 'Error en pago');
+                if (!orderData.success) throw new Error("Error creando orden");
+
+                // 2. Preparar mensaje de WhatsApp
+                const orderId = orderData.orderId;
+                const msg = `🚀 HOLA, ACABO DE REALIZAR MI PAGO MÓVIL\n\n🆔 Orden ID: ${orderId}\n🏦 Banco: ${bank}\n🔢 Ref (últimos 6): ${ref}\n💰 Total: $${totalUSD}\n\n*Adjunto el capture del pago a continuación:*`;
+                const whatsappUrl = `https://wa.me/584241437204?text=${encodeURIComponent(msg)}`;
+
+                // Abrir WhatsApp
+                window.open(whatsappUrl, '_blank');
+
+                // 3. Cambiar UI a espera de aprobación
+                document.getElementById('loading').innerHTML = `
+                    <div class="text-center p-6">
+                        <i class="fa-solid fa-clock fa-spin text-4xl text-indigo-500 mb-4"></i>
+                        <h3 class="text-xl font-bold mb-2">Esperando Confirmación</h3>
+                        <p class="text-sm text-zinc-400">Por favor, envía el capture por WhatsApp.<br>Esta pantalla se actualizará automáticamente cuando el administrador apruebe tu pago.</p>
+                        <p class="mt-4 text-xs font-mono text-indigo-300">Orden #${orderId}</p>
+                    </div>
+                `;
+
+                // 4. Iniciar Polling (cada 5 segundos)
+                checkStatusInterval = setInterval(async () => {
+                    try {
+                        const statusRes = await fetch(`/api/orders/${orderId}/status`);
+                        const statusData = await statusRes.json();
+                        
+                        if (statusData.status === 'Aprobado') {
+                            clearInterval(checkStatusInterval);
+                            document.getElementById('loading').classList.add('hidden');
+                            document.getElementById('success-view').classList.remove('hidden');
+                            document.getElementById('success-view').classList.add('flex');
+                            document.getElementById('download-btn').href = '/api/download-course';
+                            sessionStorage.removeItem('premium_cursos_cart');
+                        }
+                    } catch (err) {
+                        console.error("Error consultando status");
                     }
-                }, 1500); // Simulamos tiempo de espera si es muy rápido
-                
+                }, 5000);
+
             } catch (error) {
-                setTimeout(() => {
-                    document.getElementById('loading').classList.add('hidden');
-                    
-                    // FALLBACK: Si no está corriendo el servidor, emulamos éxito
-                    // En caso de que el usuario abra el HTML directamente sin Node.js
-                    console.log("Servidor no detectado, usando fallback frontend exitoso.");
-                    document.getElementById('success-view').classList.remove('hidden');
-                    document.getElementById('success-view').classList.add('flex');
-                    document.getElementById('download-btn').href = 'data:application/pdf;base64,JVBERi0xLjcKCjEgMCBvYmogICUgZW50cnkgcG9pbnQKPDwKICAvVHlwZSAvQ2F0YWxvZwogIC9QYWdlcyAyIDAgUgo+PgplbmRvYmoKCjIgMCBvYmoKPDwKICAvVHlwZSAvUGFnZXMKICAvTWVkaWFCb3ggWyAwIDAgMjAwIDIwMCBdCiAgL0NvdW50IDEKICAvS2lkcyBbIDMgMCBSIF0KPj4KZW5kb2JqCgozIDAgb2JqCjw8CiAgL1R5cGUgL1BhZ2UKICAvUGFyZW50IDIgMCBSCiAgL1Jlc291cmNlcyA8PAogICAgL0ZvbnQgPDwKICAgICAgL0YxIDQgMCBSCj4+CiAgPj4KICAvQ29udGVudHMgNSAwIFIKPj4KZW5kb2JqCgo0IDAgb2JqCjw8CiAgL1R5cGUgL0ZvbnQKICAvU3VidHlwZSAvVHlwZTExCiAgL0Jhc2VGb250IC9UaW1lcy1Sb21hbgo+PgplbmRvYmoKCjUgMCBvYmoKPDwgL0xlbmd0aCA0NCA+PgpzdHJlYW0KQlQKNzAgNTAgVEQKL0YxIDEyIFRmCihDdXJzbyBEZXNjYXJnYWRvISkgVGoKRVQKZW5kc3RyZWFtCmVuZG9iagoKeHJlZgowIDYKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDEwIDAwMDAwIG4gCjAwMDAwMDAwNjYgMDAwMDAgbiAKMDAwMDAwMDE2MyAwMDAwMCBuIAowMDAwMDAwMjg4IDAwMDAwIG4gCjAwMDAwMDAzODIgMDAwMDAgbiAKdHJhaWxlcgo8PAogIC9TaXplIDYKICAvUm9vdCAxIDAgUgo+PgpzdGFydHhyZWYKNDk1CiUlRU9GCg=='; 
-                    document.getElementById('download-btn').download = 'CursoPremium.pdf';
-                    sessionStorage.removeItem('premium_cursos_cart');
-                }, 1500);
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('error-msg').textContent = "Error al procesar. Intenta nuevamente.";
+                document.getElementById('error-msg').classList.remove('hidden');
             }
         }
     </script>

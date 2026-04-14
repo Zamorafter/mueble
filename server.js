@@ -1,39 +1,88 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname))); // Serve static files from root
+app.use(express.static(path.join(__dirname)));
 
-// Endpoint API para procesar el pago móvil
-// Validará los 6 dígitos y el banco para retornar el link de descarga del PDF
-app.post('/api/checkout', (req, res) => {
-    const { ref, bank, cart } = req.body;
+const ORDERS_FILE = path.join(__dirname, 'orders.json');
+
+// Helper para leer/escribir ordenes
+function getOrders() {
+    if (!fs.existsSync(ORDERS_FILE)) return [];
+    try {
+        return JSON.parse(fs.readFileSync(ORDERS_FILE, 'utf8'));
+    } catch (e) {
+        return [];
+    }
+}
+
+function saveOrders(orders) {
+    fs.writeFileSync(ORDERS_FILE, JSON.stringify(orders, null, 2));
+}
+
+// ── API ──────────────────────────────────────
+
+// Crear orden pendiente
+app.post('/api/orders', (req, res) => {
+    const { bank, ref, cart, total } = req.body;
+    const orders = getOrders();
     
-    // Aquí el backend real validaría en la base de datos o API del banco
-    // Por motivos de la demostración, aceptamos cualquier pago y retornamos éxito
-    console.log("💳 Pago recibido:", bank, "Ref:", ref);
-    console.log("🛍️ Carrito:", cart);
+    const newOrder = {
+        id: Math.floor(Math.random() * 900000) + 100000,
+        bank,
+        ref,
+        cart,
+        total,
+        status: 'Pendiente', // Pendiente, Aprobado
+        date: new Date().toLocaleString('es-VE')
+    };
     
-    if (ref && ref.length === 6 && bank) {
-        // En un caso real, generar un PDF único o tokenizado
-        return res.json({ 
-            success: true, 
-            message: "Pago verificado con éxito",
-            downloadLink: "/api/download-course"
-        });
+    orders.unshift(newOrder);
+    saveOrders(orders);
+    
+    res.json({ success: true, orderId: newOrder.id });
+});
+
+// Listar todas las ordenes (para admin)
+app.get('/api/orders', (req, res) => {
+    res.json(getOrders());
+});
+
+// Aprobar una orden
+app.patch('/api/orders/:id/approve', (req, res) => {
+    const id = parseInt(req.params.id);
+    let orders = getOrders();
+    const orderIndex = orders.findIndex(o => o.id === id);
+    
+    if (orderIndex !== -1) {
+        orders[orderIndex].status = 'Aprobado';
+        saveOrders(orders);
+        res.json({ success: true });
     } else {
-        return res.status(400).json({ 
-            success: false, 
-            message: "Datos de pago inválidos" 
-        });
+        res.status(404).json({ success: false, message: "Orden no encontrada" });
     }
 });
 
-// Endpoint para descargar el curso
+// Consultar status de una orden
+app.get('/api/orders/:id/status', (req, res) => {
+    const id = parseInt(req.params.id);
+    const orders = getOrders();
+    const order = orders.find(o => o.id === id);
+    
+    if (order) {
+        res.json({ status: order.status });
+    } else {
+        res.status(404).json({ success: false });
+    }
+});
+
+// Endpoint para descargar el curso (Solo si se conoce un ID aprobado o via token en un escenario real)
+// Para esta demo lo mantenemos abierto pero el frontend solo lo muestra si esta aprobado
 app.get('/api/download-course', (req, res) => {
     const PDFDocument = require('pdfkit');
     res.setHeader('Content-disposition', 'attachment; filename=MasterClass_GlobalTrade.pdf');
@@ -85,7 +134,7 @@ app.get('/api/download-course', (req, res) => {
        .moveDown()
        .text('Documentación: Factura Comercial, Bill of Lading (B/L), y Certificado de Origen.');
 
-    // Capítulo 3 (Nuevo)
+    // Capítulo 3
     doc.addPage();
     doc.rect(0, 0, doc.page.width, 100).fill('#6366f1');
     doc.fillColor('#ffffff').fontSize(26).text('3. Exportar desde China', 50, 40);
@@ -106,11 +155,10 @@ app.get('/api/download-course', (req, res) => {
     doc.end();
 });
 
-// Redirigir siempre al index o servir las vistas
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.listen(PORT, () => {
-    console.log(`🚀 Servidor backend corriendo en http://localhost:${PORT}`);
+    console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
 });
