@@ -169,7 +169,14 @@
 
                 // 2. Preparar mensaje de WhatsApp
                 const orderId = orderData.orderId;
-                const msg = `🚀 HOLA, ACABO DE REALIZAR MI PAGO MÓVIL\n\n🆔 Orden ID: ${orderId}\n🏦 Banco: ${bank}\n🔢 Ref (últimos 6): ${ref}\n💰 Total: $${totalUSD}\n\n*Adjunto el capture del pago a continuación:*`;
+                const msg = `🟢 *NUEVA SOLICITUD DE VERIFICACIÓN* 🚀\n\n` +
+                            `He realizado mi Pago Móvil para los cursos de GlobalTrade.\n\n` +
+                            `🆔 *Orden ID:* ${orderId}\n` +
+                            `🏦 *Banco:* ${bank}\n` +
+                            `🔢 *Referencia:* ${ref}\n` +
+                            `💰 *Monto:* $${totalUSD}\n\n` +
+                            `⚠️ *IMPORTANTE:* Por favor, envíe la captura de pantalla o comprobante de este pago por aquí para que el administrador valide mi acceso inmediatamente.`;
+                
                 const whatsappUrl = `https://wa.me/584241437204?text=${encodeURIComponent(msg)}`;
 
                 // Abrir WhatsApp
@@ -178,10 +185,12 @@
                 // 3. Cambiar UI a espera de aprobación
                 document.getElementById('loading').innerHTML = `
                     <div class="text-center p-6">
-                        <i class="fa-solid fa-clock fa-spin text-4xl text-indigo-500 mb-4"></i>
-                        <h3 class="text-xl font-bold mb-2">Esperando Confirmación</h3>
-                        <p class="text-sm text-zinc-400">Por favor, envía el capture por WhatsApp.<br>Esta pantalla se actualizará automáticamente cuando el administrador apruebe tu pago.</p>
-                        <p class="mt-4 text-xs font-mono text-indigo-300">Orden #${orderId}</p>
+                        <i class="fa-solid fa-cloud-arrow-up fa-bounce text-4xl text-indigo-500 mb-4"></i>
+                        <h3 class="text-xl font-bold mb-2">¡Casi listo!</h3>
+                        <p class="text-sm text-zinc-400">Hemos abierto tu WhatsApp. **Debes enviar la captura del pago** para que podamos habilitar tu descarga.</p>
+                        <div class="mt-6 p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-xl">
+                           <p class="text-xs text-indigo-300">Estamos monitoreando tu Orden #${orderId}...</p>
+                        </div>
                     </div>
                 `;
 
