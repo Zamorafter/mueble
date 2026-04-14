@@ -22,7 +22,12 @@ function getOrders() {
 }
 
 function saveOrders(orders) {
-    fs.writeFileSync(ORDERS_FILE, JSON.stringify(orders, null, 2));
+    try {
+        fs.writeFileSync(ORDERS_FILE, JSON.stringify(orders, null, 2));
+        console.log("✅ Orden guardada correctamente.");
+    } catch (e) {
+        console.error("❌ Error escribiendo orders.json:", e);
+    }
 }
 
 // ── API ──────────────────────────────────────
