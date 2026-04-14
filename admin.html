@@ -13,10 +13,9 @@
         .glass { background:rgba(20,20,20,0.6); backdrop-filter:blur(16px); border:1px solid rgba(255,255,255,0.07); }
         .glass-card { background:rgba(25,25,25,0.8); border:1px solid rgba(255,255,255,0.07); transition: transform 0.3s; }
         .glass-card:hover { transform: scale(1.01); }
-        input { background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:10px 14px; color:white; width:100%; outline:none; }
+        input { background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:10px 14px; color:white; width:100%; outline:none; text-align: center; }
         input:focus { border-color:#6366f1; }
         .status-pill { font-size:0.6rem; padding:4px 10px; border-radius:99px; font-weight:700; text-transform:uppercase; }
-        .tab-btn.active { border-bottom: 2px solid #6366f1; color: #6366f1; }
     </style>
 </head>
 <body class="min-h-screen">
@@ -26,7 +25,7 @@
         <div class="glass rounded-3xl p-10 w-full max-w-sm mx-4 border border-white/10 text-center">
             <h1 class="text-3xl font-heading text-white mb-2">Admin Panel</h1>
             <p class="text-indigo-400 text-sm mb-8">Acceso Restringido</p>
-            <input id="login-pass" type="password" placeholder="Contraseña de Admin" class="text-center mb-6">
+            <input id="login-pass" type="password" placeholder="Contraseña de Admin" class="mb-6">
             <button onclick="checkLogin()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-500 transition-colors">Ingresar</button>
             <p id="login-error" class="text-red-500 text-xs mt-4 hidden">Contraseña Incorrecta</p>
             <p class="text-[10px] text-zinc-600 mt-6">Hint: admin123</p>
@@ -41,20 +40,15 @@
         </nav>
 
         <div class="max-w-7xl mx-auto px-6 py-10">
-            
             <div class="flex gap-8 mb-10 border-b border-white/5">
-                <button class="tab-btn active pb-4 text-sm font-bold uppercase tracking-widest">Gestión de Cobros</button>
+                <button class="pb-4 text-sm font-bold uppercase tracking-widest text-indigo-400 border-b-2 border-indigo-400">Gestión de Cobros</button>
             </div>
 
-            <div id="orders-list" class="space-y-6">
-                <!-- Dinámico -->
+            <div id="orders-list" class="space-y-6"></div>
+            <div id="orders-empty" class="hidden text-center py-20 text-zinc-600">
+                <i class="fa-solid fa-receipt text-5xl mb-4 opacity-20"></i>
+                <p>No hay órdenes pendientes en este momento.</p>
             </div>
-            
-            <div id="orders-empty" class="hidden text-center py-20">
-                <i class="fa-solid fa-receipt text-5xl text-zinc-800 mb-4"></i>
-                <p class="text-zinc-600">No hay órdenes pendientes en el sistema.</p>
-            </div>
-
         </div>
     </div>
 
@@ -62,7 +56,8 @@
         const ADMIN_PASS = 'admin123';
 
         function checkLogin() {
-            if(document.getElementById('login-pass').value === ADMIN_PASS) {
+            const val = document.getElementById('login-pass').value;
+            if(val === ADMIN_PASS) {
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('admin-panel').classList.remove('hidden');
                 loadOrders();
@@ -74,70 +69,55 @@
         function logout() { location.reload(); }
 
         async function loadOrders() {
-            const res = await fetch('/api/orders');
-            const orders = await res.json();
-            const container = document.getElementById('orders-list');
-            const empty = document.getElementById('orders-empty');
+            try {
+                const res = await fetch('/api/orders');
+                const orders = await res.json();
+                const container = document.getElementById('orders-list');
+                const empty = document.getElementById('orders-empty');
 
-            if(orders.length === 0) {
-                empty.classList.remove('hidden');
-                container.innerHTML = '';
-                return;
-            }
-            empty.classList.add('hidden');
+                if(!orders || orders.length === 0) {
+                    empty.classList.remove('hidden');
+                    container.innerHTML = '';
+                    return;
+                }
+                empty.classList.add('hidden');
 
-            container.innerHTML = orders.map(o => `
-                <div class="glass-card rounded-2xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                    <div class="flex-1">
-                        <div class="flex items-center gap-4 mb-2">
-                            <span class="text-zinc-500 font-mono text-sm">#${o.id}</span>
-                            <span class="status-pill ${o.status === 'Aprobado' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}">
-                                ${o.status}
-                            </span>
+                container.innerHTML = orders.map(o => `
+                    <div class="glass-card rounded-2xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-4 mb-2">
+                                <span class="text-zinc-500 font-mono text-sm">#${o.id}</span>
+                                <span class="status-pill ${o.status === 'Aprobado' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}">
+                                    ${o.status}
+                                </span>
+                            </div>
+                            <h3 class="text-xl font-bold text-white mb-1">Pago desde ${o.bank}</h3>
+                            <p class="text-zinc-400 text-sm">Ref: <strong class="text-white">${o.ref}</strong> • ${o.date}</p>
                         </div>
-                        <h3 class="text-xl font-bold text-white mb-1">Pago desde ${o.bank}</h3>
-                        <p class="text-zinc-400 text-sm">Referencia: <strong class="text-white">${o.ref}</strong> • Fecha: ${o.date}</p>
+                        <div class="w-full md:w-auto flex flex-col items-end gap-2">
+                            <p class="text-2xl font-heading text-indigo-400">$${o.total}</p>
+                            ${o.status === 'Pendiente' ? `
+                                <button onclick="approveOrder(${o.id})" class="bg-indigo-600 text-white px-6 py-2 rounded-lg text-sm font-bold hover:bg-green-600 transition-all">
+                                    Aprobar Pago
+                                </button>
+                            ` : `<span class="text-xs text-green-500 font-bold">✓ Acceso Habilitado</span>`}
+                        </div>
                     </div>
-                    
-                    <div class="w-full md:w-auto flex flex-col items-end gap-2 border-l border-white/5 pl-6">
-                        <p class="text-2xl font-heading text-indigo-400">$${o.total}</p>
-                        ${o.status === 'Pendiente' ? `
-                            <button onclick="approveOrder(${o.id})" class="bg-indigo-600 text-white px-6 py-2 rounded-lg text-sm font-bold hover:bg-green-600 transition-all w-full md:w-auto">
-                                <i class="fa-solid fa-check mr-2"></i> Aprobar Pago
-                            </button>
-                        ` : `
-                            <span class="text-xs text-green-500 font-bold"><i class="fa-solid fa-circle-check"></i> Acceso PDF Habilitado</span>
-                        `}
-                    </div>
-                </div>
-            `).join('');
+                `).join('');
+            } catch(e) { console.error("Error cargando ordenes"); }
         }
 
         async function approveOrder(id) {
-            if(!confirm('¿Confirmas que recibiste el capture y el dinero en cuenta?')) return;
-            
+            if(!confirm('¿Confirmas que recibiste el pago en tu cuenta?')) return;
             const res = await fetch(\`/api/orders/\${id}/approve\`, { method: 'PATCH' });
-            if(res.ok) {
-                loadOrders();
-                alert('¡Pago aprobado! El cliente ya puede descargar su curso.');
-            }
+            if(res.ok) { loadOrders(); }
         }
 
-        // Auto Refresh cada 10 segundos
+        document.getElementById('login-pass').addEventListener('keydown', e => { if(e.key === 'Enter') checkLogin(); });
+        
         setInterval(() => {
             if(!document.getElementById('admin-panel').classList.contains('hidden')) loadOrders();
         }, 10000);
-    </script>
-</body>
-</html>document.getElementById('img-input').value = '';
-            document.getElementById('img-preview-container').classList.add('hidden');
-            document.getElementById('img-placeholder').classList.remove('hidden');
-            document.getElementById('form-error').classList.add('hidden');
-            currentImgData = '';
-        }
-
-        // Presionar Enter en el login
-        document.getElementById('login-pass').addEventListener('keydown', e => { if(e.key === 'Enter') checkLogin(); });
     </script>
 </body>
 </html>
