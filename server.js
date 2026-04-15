@@ -57,7 +57,8 @@ app.post('/api/orders', (req, res) => {
         cart,
         total,
         status: 'Pendiente', // Pendiente, Aprobado
-        date: new Date().toLocaleString('es-VE')
+        date: new Date().toLocaleString('es-VE'),
+        createdAt: new Date().toISOString()
     };
     
     orders.unshift(newOrder);
@@ -79,6 +80,9 @@ app.patch('/api/orders/:id/approve', (req, res) => {
     
     if (orderIndex !== -1) {
         orders[orderIndex].status = 'Aprobado';
+        if (!orders[orderIndex].approvedAt) {
+            orders[orderIndex].approvedAt = new Date().toISOString();
+        }
         saveOrders(orders);
         res.json({ success: true });
     } else {

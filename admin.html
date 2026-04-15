@@ -1,11 +1,12 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GlobalTrade Academy • Admin Panel</title>
+    <title>GlobalTrade Academy - Admin Panel</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Outfit:wght@300;400;500;600&display=swap');
         body { background-color:#030303; font-family:'Outfit',sans-serif; color:#e4e4e7; }
@@ -20,22 +21,20 @@
 </head>
 <body class="min-h-screen">
 
-    <!-- LOGIN -->
     <div id="login-screen" class="fixed inset-0 bg-zinc-950 flex items-center justify-center z-[999]">
         <div class="glass rounded-3xl p-10 w-full max-w-sm mx-4 border border-white/10 text-center">
             <h1 class="text-3xl font-heading text-white mb-2">Admin Panel</h1>
             <p class="text-indigo-400 text-sm mb-8">Acceso Restringido</p>
-            <input id="login-pass" type="password" placeholder="Contraseña de Admin" class="mb-6">
+            <input id="login-pass" type="password" placeholder="Contrasena de Admin" class="mb-6">
             <button onclick="checkLogin()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-500 transition-colors">Ingresar</button>
-            <p id="login-error" class="text-red-500 text-xs mt-4 hidden">Contraseña Incorrecta</p>
+            <p id="login-error" class="text-red-500 text-xs mt-4 hidden">Contrasena Incorrecta</p>
             <div class="mt-6 p-3 bg-indigo-900/30 border border-indigo-500/20 rounded-xl">
-                <p class="text-indigo-300 text-xs mb-1">Contraseña de acceso:</p>
+                <p class="text-indigo-300 text-xs mb-1">Contrasena de acceso:</p>
                 <p class="text-white font-mono font-bold text-lg tracking-widest">admin</p>
             </div>
         </div>
     </div>
 
-    <!-- PANEL -->
     <div id="admin-panel" class="hidden">
         <nav class="glass border-b border-white/10 px-6 py-4 flex items-center justify-between sticky top-0 z-50">
             <h1 class="font-heading text-xl">GlobalTrade <span class="text-indigo-400">Admin</span></h1>
@@ -44,23 +43,75 @@
 
         <div class="max-w-7xl mx-auto px-6 py-10">
             <div class="flex gap-8 mb-10 border-b border-white/5">
-                <button class="pb-4 text-sm font-bold uppercase tracking-widest text-indigo-400 border-b-2 border-indigo-400">Gestión de Cobros</button>
+                <button class="pb-4 text-sm font-bold uppercase tracking-widest text-indigo-400 border-b-2 border-indigo-400">Gestion de Cobros</button>
             </div>
 
             <div id="orders-list" class="space-y-6"></div>
             <div id="orders-empty" class="hidden text-center py-20 text-zinc-600">
                 <i class="fa-solid fa-receipt text-5xl mb-4 opacity-20"></i>
-                <p>No hay órdenes pendientes en este momento.</p>
+                <p>No hay ordenes pendientes en este momento.</p>
+            </div>
+
+            <div class="mt-12 glass rounded-2xl p-6 border border-white/10">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                    <div>
+                        <h2 class="text-2xl font-heading text-white">Registro de Ventas</h2>
+                        <p class="text-zinc-400 text-sm">Resumen de ventas aprobadas por semana y mes.</p>
+                    </div>
+                    <div class="flex flex-wrap gap-3">
+                        <button onclick="exportWeeklyExcel()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-emerald-500 transition-colors">Exportar Semanal a Excel</button>
+                        <button onclick="exportMonthlyExcel()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-indigo-500 transition-colors">Exportar Mensual a Excel</button>
+                        <button onclick="exportSalesExcel()" class="bg-white/10 text-white px-4 py-2 rounded-lg text-xs font-bold border border-white/10 hover:bg-white/20 transition-colors">Exportar Todo</button>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="glass-card rounded-xl p-4 border border-white/10">
+                        <h3 class="text-lg font-heading text-white mb-3">Ventas Semanales</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="text-zinc-400 border-b border-white/10">
+                                        <th class="text-left py-2">Semana</th>
+                                        <th class="text-left py-2">Rango</th>
+                                        <th class="text-right py-2">Ventas</th>
+                                        <th class="text-right py-2">Total (USD)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="weekly-sales-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="glass-card rounded-xl p-4 border border-white/10">
+                        <h3 class="text-lg font-heading text-white mb-3">Ventas Mensuales</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="text-zinc-400 border-b border-white/10">
+                                        <th class="text-left py-2">Mes</th>
+                                        <th class="text-left py-2">Rango</th>
+                                        <th class="text-right py-2">Ventas</th>
+                                        <th class="text-right py-2">Total (USD)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="monthly-sales-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
         const ADMIN_PASS = 'admin';
+        let weeklySalesData = [];
+        let monthlySalesData = [];
 
         function checkLogin() {
             const val = document.getElementById('login-pass').value;
-            if(val === ADMIN_PASS) {
+            if (val === ADMIN_PASS) {
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('admin-panel').classList.remove('hidden');
                 loadOrders();
@@ -71,6 +122,190 @@
 
         function logout() { location.reload(); }
 
+        function parseOrderDate(order) {
+            if (order.approvedAt) {
+                const d = new Date(order.approvedAt);
+                if (!isNaN(d)) return d;
+            }
+            if (order.createdAt) {
+                const d = new Date(order.createdAt);
+                if (!isNaN(d)) return d;
+            }
+            if (order.date) {
+                const text = String(order.date);
+                const match = text.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})(?:,\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([ap])\.?\s*m\.?)?/i);
+                if (match) {
+                    const day = Number(match[1]);
+                    const month = Number(match[2]) - 1;
+                    const year = Number(match[3]);
+                    let hour = Number(match[4] || 0);
+                    const minute = Number(match[5] || 0);
+                    const second = Number(match[6] || 0);
+                    const ampm = (match[7] || '').toLowerCase();
+                    if (ampm === 'p' && hour < 12) hour += 12;
+                    if (ampm === 'a' && hour === 12) hour = 0;
+                    return new Date(year, month, day, hour, minute, second);
+                }
+            }
+            return null;
+        }
+
+        function formatDate(date) {
+            return new Intl.DateTimeFormat('es-VE', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date);
+        }
+
+        function getWeekStart(date) {
+            const d = new Date(date);
+            const day = d.getDay();
+            const diff = day === 0 ? -6 : 1 - day;
+            d.setHours(0, 0, 0, 0);
+            d.setDate(d.getDate() + diff);
+            return d;
+        }
+
+        function getWeekEnd(weekStart) {
+            const d = new Date(weekStart);
+            d.setDate(d.getDate() + 6);
+            d.setHours(23, 59, 59, 999);
+            return d;
+        }
+
+        function getMonthStart(date) {
+            return new Date(date.getFullYear(), date.getMonth(), 1);
+        }
+
+        function getMonthEnd(monthStart) {
+            return new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0, 23, 59, 59, 999);
+        }
+
+        function getISOWeekNumber(date) {
+            const target = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            const dayNum = target.getUTCDay() || 7;
+            target.setUTCDate(target.getUTCDate() + 4 - dayNum);
+            const yearStart = new Date(Date.UTC(target.getUTCFullYear(), 0, 1));
+            return Math.ceil((((target - yearStart) / 86400000) + 1) / 7);
+        }
+
+        function buildSalesReport(orders) {
+            const approved = orders.filter(o => o.status === 'Aprobado');
+            const weeklyMap = new Map();
+            const monthlyMap = new Map();
+
+            approved.forEach(order => {
+                const date = parseOrderDate(order);
+                if (!date || isNaN(date)) return;
+                const total = Number(order.total) || 0;
+
+                const weekStart = getWeekStart(date);
+                const weekEnd = getWeekEnd(weekStart);
+                const weekKey = `${weekStart.getFullYear()}-${String(getISOWeekNumber(date)).padStart(2, '0')}`;
+                if (!weeklyMap.has(weekKey)) {
+                    weeklyMap.set(weekKey, {
+                        label: `Semana ${getISOWeekNumber(date)} - ${weekStart.getFullYear()}`,
+                        from: new Date(weekStart),
+                        to: new Date(weekEnd),
+                        sales: 0,
+                        total: 0
+                    });
+                }
+                const w = weeklyMap.get(weekKey);
+                w.sales += 1;
+                w.total += total;
+
+                const monthStart = getMonthStart(date);
+                const monthEnd = getMonthEnd(monthStart);
+                const monthKey = `${monthStart.getFullYear()}-${String(monthStart.getMonth() + 1).padStart(2, '0')}`;
+                if (!monthlyMap.has(monthKey)) {
+                    const monthLabel = new Intl.DateTimeFormat('es-VE', { month: 'long', year: 'numeric' }).format(monthStart);
+                    monthlyMap.set(monthKey, {
+                        label: monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1),
+                        from: new Date(monthStart),
+                        to: new Date(monthEnd),
+                        sales: 0,
+                        total: 0
+                    });
+                }
+                const m = monthlyMap.get(monthKey);
+                m.sales += 1;
+                m.total += total;
+            });
+
+            weeklySalesData = [...weeklyMap.values()].sort((a, b) => b.from - a.from);
+            monthlySalesData = [...monthlyMap.values()].sort((a, b) => b.from - a.from);
+        }
+
+        function renderSalesTable(tbodyId, rows) {
+            const tbody = document.getElementById(tbodyId);
+            if (!rows.length) {
+                tbody.innerHTML = '<tr><td colspan="4" class="py-4 text-center text-zinc-500">Sin ventas aprobadas.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = rows.map(r => `
+                <tr class="border-b border-white/5">
+                    <td class="py-2 text-zinc-200">${r.label}</td>
+                    <td class="py-2 text-zinc-400">${formatDate(r.from)} - ${formatDate(r.to)}</td>
+                    <td class="py-2 text-right text-zinc-200">${r.sales}</td>
+                    <td class="py-2 text-right text-indigo-300">$${r.total.toFixed(2)}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderSalesReports(orders) {
+            buildSalesReport(orders);
+            renderSalesTable('weekly-sales-body', weeklySalesData);
+            renderSalesTable('monthly-sales-body', monthlySalesData);
+        }
+
+        function exportSheet(fileName, weeklyRows, monthlyRows) {
+            if (typeof XLSX === 'undefined') {
+                alert('No se pudo cargar la libreria de Excel. Intenta recargar la pagina.');
+                return;
+            }
+
+            const wb = XLSX.utils.book_new();
+
+            if (weeklyRows.length) {
+                const wsWeekly = XLSX.utils.json_to_sheet(weeklyRows.map(r => ({
+                    Semana: r.label,
+                    Desde: formatDate(r.from),
+                    Hasta: formatDate(r.to),
+                    Ventas: r.sales,
+                    Total_USD: Number(r.total.toFixed(2))
+                })));
+                XLSX.utils.book_append_sheet(wb, wsWeekly, 'Semanal');
+            } else {
+                XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['Sin datos semanales']]), 'Semanal');
+            }
+
+            if (monthlyRows.length) {
+                const wsMonthly = XLSX.utils.json_to_sheet(monthlyRows.map(r => ({
+                    Mes: r.label,
+                    Desde: formatDate(r.from),
+                    Hasta: formatDate(r.to),
+                    Ventas: r.sales,
+                    Total_USD: Number(r.total.toFixed(2))
+                })));
+                XLSX.utils.book_append_sheet(wb, wsMonthly, 'Mensual');
+            } else {
+                XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['Sin datos mensuales']]), 'Mensual');
+            }
+
+            XLSX.writeFile(wb, fileName);
+        }
+
+        function exportWeeklyExcel() {
+            exportSheet(`ventas_semanales_${new Date().toISOString().slice(0, 10)}.xlsx`, weeklySalesData, []);
+        }
+
+        function exportMonthlyExcel() {
+            exportSheet(`ventas_mensuales_${new Date().toISOString().slice(0, 10)}.xlsx`, [], monthlySalesData);
+        }
+
+        function exportSalesExcel() {
+            exportSheet(`ventas_admin_${new Date().toISOString().slice(0, 10)}.xlsx`, weeklySalesData, monthlySalesData);
+        }
+
         async function loadOrders() {
             try {
                 const res = await fetch('/api/orders');
@@ -78,7 +313,9 @@
                 const container = document.getElementById('orders-list');
                 const empty = document.getElementById('orders-empty');
 
-                if(!orders || orders.length === 0) {
+                renderSalesReports(orders || []);
+
+                if (!orders || orders.length === 0) {
                     empty.classList.remove('hidden');
                     container.innerHTML = '';
                     return;
@@ -95,10 +332,10 @@
                                 </span>
                             </div>
                             <h3 class="text-xl font-bold text-white mb-1">Pago desde ${o.bank}</h3>
-                            <p class="text-zinc-400 text-sm">Ref: <strong class="text-white">${o.ref}</strong> • ${o.date}</p>
+                            <p class="text-zinc-400 text-sm">Ref: <strong class="text-white">${o.ref}</strong> • ${o.date || '-'}</p>
                         </div>
                         <div class="w-full md:w-auto flex flex-col items-end gap-2">
-                            <p class="text-2xl font-heading text-indigo-400">$${o.total}</p>
+                            <p class="text-2xl font-heading text-indigo-400">$${Number(o.total || 0).toFixed(2)}</p>
                             ${o.status === 'Pendiente' ? `
                                 <button onclick="approveOrder(${o.id})" class="bg-indigo-600 text-white px-6 py-2 rounded-lg text-sm font-bold hover:bg-green-600 transition-all">
                                     Aprobar Pago
@@ -107,19 +344,23 @@
                         </div>
                     </div>
                 `).join('');
-            } catch(e) { console.error("Error cargando ordenes"); }
+            } catch(e) {
+                console.error('Error cargando ordenes');
+            }
         }
 
         async function approveOrder(id) {
-            if(!confirm('¿Confirmas que recibiste el pago en tu cuenta?')) return;
+            if (!confirm('¿Confirmas que recibiste el pago en tu cuenta?')) return;
             const res = await fetch(`/api/orders/${id}/approve`, { method: 'PATCH' });
-            if(res.ok) { loadOrders(); }
+            if (res.ok) loadOrders();
         }
 
-        document.getElementById('login-pass').addEventListener('keydown', e => { if(e.key === 'Enter') checkLogin(); });
-        
+        document.getElementById('login-pass').addEventListener('keydown', e => {
+            if (e.key === 'Enter') checkLogin();
+        });
+
         setInterval(() => {
-            if(!document.getElementById('admin-panel').classList.contains('hidden')) loadOrders();
+            if (!document.getElementById('admin-panel').classList.contains('hidden')) loadOrders();
         }, 10000);
     </script>
 </body>
