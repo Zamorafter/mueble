@@ -195,7 +195,9 @@
                 });
                 const orderData = await response.json();
 
-                if (!orderData.success) throw new Error('Error creando orden');
+                if (!response.ok || !orderData.success) {
+                    throw new Error(orderData.message || 'Error creando orden');
+                }
 
                 const orderId = orderData.orderId;
                 const msg = `🟢 *NUEVA SOLICITUD DE VERIFICACIÓN* 🚀\n\n` +
@@ -242,7 +244,7 @@
             } catch (error) {
                 if (popup && !popup.closed) popup.close();
                 document.getElementById('loading').classList.add('hidden');
-                errorMsg.textContent = 'Error al procesar. Intenta nuevamente.';
+                errorMsg.textContent = error.message || 'Error al procesar. Intenta nuevamente.';
                 errorMsg.classList.remove('hidden');
             }
         }

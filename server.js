@@ -36,11 +36,24 @@ function saveOrders(orders) {
 app.post('/api/orders', (req, res) => {
     const { bank, ref, cart, total } = req.body;
     const orders = getOrders();
+    const normalizedRef = String(ref || '').trim();
+
+    if (!/^\d{6}$/.test(normalizedRef)) {
+        return res.status(400).json({ success: false, message: 'La referencia debe tener exactamente 6 dígitos.' });
+    }
+
+    const existingRefOrder = orders.find(o => String(o.ref || '').trim() === normalizedRef);
+    if (existingRefOrder) {
+        return res.status(409).json({
+            success: false,
+            message: 'Esta referencia ya fue registrada en otra compra. Verifica el comprobante o usa una referencia nueva.'
+        });
+    }
     
     const newOrder = {
         id: Math.floor(Math.random() * 900000) + 100000,
         bank,
-        ref,
+        ref: normalizedRef,
         cart,
         total,
         status: 'Pendiente', // Pendiente, Aprobado
