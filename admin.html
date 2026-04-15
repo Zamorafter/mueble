@@ -112,7 +112,7 @@
 
         async function approveOrder(id) {
             if(!confirm('¿Confirmas que recibiste el pago en tu cuenta?')) return;
-            const res = await fetch(\`/api/orders/\${id}/approve\`, { method: 'PATCH' });
+            const res = await fetch(`/api/orders/${id}/approve`, { method: 'PATCH' });
             if(res.ok) { loadOrders(); }
         }
 
