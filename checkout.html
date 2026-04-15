@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -8,10 +8,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap');
-        body { 
-            background-color: #030303; 
-            font-family: 'Outfit', sans-serif; 
-            color: #e4e4e7; 
+        body {
+            background-color: #030303;
+            font-family: 'Outfit', sans-serif;
+            color: #e4e4e7;
         }
         .glass-card { background: rgba(20, 20, 20, 0.4); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.05); }
         .input-field { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 12px 16px; border-radius: 8px; width: 100%; outline: none; }
@@ -21,16 +21,13 @@
 <body class="antialiased min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-black via-zinc-900 to-black">
 
     <div class="max-w-4xl w-full grid md:grid-cols-2 gap-8">
-        
-        <!-- Detalles del Pedido -->
+
         <div class="glass-card p-8 rounded-3xl">
             <h2 class="text-2xl font-semibold mb-6 flex items-center justify-between">
                 <span>Tu Pedido</span>
                 <a href="index.html" class="text-sm text-indigo-400 hover:underline">Volver</a>
             </h2>
-            <div id="checkout-items" class="space-y-4 mb-6 max-h-60 overflow-y-auto pr-2">
-                <!-- items insertados por JS -->
-            </div>
+            <div id="checkout-items" class="space-y-4 mb-6 max-h-60 overflow-y-auto pr-2"></div>
             <div class="border-t border-white/10 pt-4 flex justify-between items-center text-xl font-bold">
                 <span>Total a Pagar:</span>
                 <span id="checkout-total" class="text-indigo-400">$0</span>
@@ -44,10 +41,9 @@
             </div>
         </div>
 
-        <!-- Formulario Pago -->
         <div class="glass-card p-8 rounded-3xl relative">
             <h2 class="text-2xl font-semibold mb-6">Verificar Pago Móvil</h2>
-            
+
             <form id="payment-form" class="space-y-5" onsubmit="verifyPayment(event)">
                 <div>
                     <label class="block text-sm text-zinc-400 mb-2">Banco de origen</label>
@@ -64,6 +60,7 @@
                 <div>
                     <label class="block text-sm text-zinc-400 mb-2">Últimos 6 dígitos de referencia</label>
                     <input type="text" id="ref-input" required maxlength="6" pattern="\d{6}" placeholder="Ej: 849201" class="input-field" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    <p class="text-xs text-zinc-500 mt-2">La referencia debe tener 6 dígitos y no puede repetir ningún número.</p>
                 </div>
 
                 <div class="pt-4">
@@ -74,13 +71,20 @@
                 </div>
             </form>
 
-            <!-- Loading overlay -->
+            <div class="mt-6 p-4 rounded-xl bg-emerald-900/20 border border-emerald-500/20">
+                <p class="text-xs uppercase tracking-widest text-emerald-300 font-semibold mb-2">Soporte de Pagos</p>
+                <a href="https://wa.me/584121410302?text=Hola%2C%20tengo%20una%20duda%20con%20mi%20pago%20de%20GlobalTrade.%20Adjunto%20captura." target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 text-emerald-300 hover:text-emerald-200 font-semibold">
+                    <i class="fa-brands fa-whatsapp text-lg"></i>
+                    +58 412-1410302
+                </a>
+                <p class="text-xs text-zinc-400 mt-2">Si tienes algún problema con el pago, envía tu captura por WhatsApp y nuestro equipo te ayudará.</p>
+            </div>
+
             <div id="loading" class="absolute inset-0 bg-black/80 rounded-3xl flex flex-col items-center justify-center hidden z-10 backdrop-blur-sm">
                 <i class="fa-solid fa-circle-notch fa-spin text-4xl text-indigo-500 mb-4"></i>
                 <p>Validando transacción...</p>
             </div>
-            
-            <!-- Success Overlay -->
+
             <div id="success-view" class="absolute inset-0 bg-black/95 rounded-3xl flex flex-col items-center justify-center hidden z-20 text-center p-8">
                 <div class="w-16 h-16 rounded-full bg-green-500/20 text-green-500 flex items-center justify-center text-3xl mb-4">
                     <i class="fa-solid fa-check"></i>
@@ -100,7 +104,7 @@
         window.addEventListener('load', async () => {
             const container = document.getElementById('checkout-items');
             const totalEl = document.getElementById('checkout-total');
-            
+
             if (cart.length === 0) {
                 container.innerHTML = '<p class="text-zinc-500">Tu carrito está vacío.</p>';
                 return;
@@ -120,19 +124,16 @@
                 total += item.price * item.qty;
             });
             container.innerHTML = html;
-            
-            // Tratamos de obtener la tasa oficial del BCV del día
+
             let tasa = 36.45;
             try {
                 const res = await fetch('https://ve.dolarapi.com/v1/dolares/oficial');
                 const data = await res.json();
-                if(data && data.promedio) {
-                    tasa = data.promedio;
-                }
-            } catch(e) {
-                console.log("Error consultando API, usando tasa de respaldo BCV.");
+                if (data && data.promedio) tasa = data.promedio;
+            } catch (e) {
+                console.log('Error consultando API, usando tasa de respaldo BCV.');
             }
-            
+
             const totalBs = (total * tasa).toFixed(2);
             totalEl.innerHTML = `
                 <div class="text-right">
@@ -144,20 +145,49 @@
         });
 
         let checkStatusInterval = null;
+        const SUPPORT_PHONE = '584121410302';
+
+        function hasRepeatedDigits(ref) {
+            return new Set(ref.split('')).size !== ref.length;
+        }
+
+        function openWhatsAppReliable(url, popupRef) {
+            if (popupRef && !popupRef.closed) {
+                try {
+                    popupRef.location.href = url;
+                    return;
+                } catch (err) {
+                    // fallback
+                }
+            }
+            window.location.href = url;
+        }
 
         async function verifyPayment(e) {
             e.preventDefault();
             const bank = document.getElementById('bank-select').value;
             const ref = document.getElementById('ref-input').value;
             const totalUSD = cart.reduce((s, i) => s + i.price * i.qty, 0);
+            const errorMsg = document.getElementById('error-msg');
 
-            if (ref.length !== 6) return;
+            if (ref.length !== 6) {
+                errorMsg.textContent = 'La referencia debe tener exactamente 6 dígitos.';
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+
+            if (hasRepeatedDigits(ref)) {
+                errorMsg.textContent = 'La referencia no puede repetir dígitos. Verifica e intenta de nuevo.';
+                errorMsg.classList.remove('hidden');
+                return;
+            }
 
             document.getElementById('loading').classList.remove('hidden');
-            document.getElementById('error-msg').classList.add('hidden');
+            errorMsg.classList.add('hidden');
+
+            const popup = window.open('', '_blank');
 
             try {
-                // 1. Crear la orden en el backend
                 const response = await fetch('/api/orders', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -165,9 +195,8 @@
                 });
                 const orderData = await response.json();
 
-                if (!orderData.success) throw new Error("Error creando orden");
+                if (!orderData.success) throw new Error('Error creando orden');
 
-                // 2. Preparar mensaje de WhatsApp
                 const orderId = orderData.orderId;
                 const msg = `🟢 *NUEVA SOLICITUD DE VERIFICACIÓN* 🚀\n\n` +
                             `He realizado mi Pago Móvil para los cursos de GlobalTrade.\n\n` +
@@ -176,51 +205,45 @@
                             `🔢 *Referencia:* ${ref}\n` +
                             `💰 *Monto:* $${totalUSD}\n\n` +
                             `⚠️ *IMPORTANTE:* Por favor, envíe la captura de pantalla o comprobante de este pago por aquí para que el administrador valide mi acceso inmediatamente.`;
-                
-                const whatsappUrl = `https://wa.me/584121410302?text=${encodeURIComponent(msg)}`;
 
-                // Abrir WhatsApp
-                window.open(whatsappUrl, '_blank');
+                const whatsappUrl = `https://wa.me/${SUPPORT_PHONE}?text=${encodeURIComponent(msg)}`;
+                openWhatsAppReliable(whatsappUrl, popup);
 
-                // 3. Cambiar UI a espera de aprobación
                 document.getElementById('loading').innerHTML = `
                     <div class="text-center p-6">
                         <i class="fa-solid fa-cloud-arrow-up fa-bounce text-4xl text-indigo-500 mb-4"></i>
                         <h3 class="text-xl font-bold mb-2">¡Casi listo!</h3>
-                        <p class="text-sm text-zinc-400">Hemos abierto tu WhatsApp. **Debes enviar la captura del pago** para que podamos habilitar tu descarga.</p>
+                        <p class="text-sm text-zinc-400">Te redirigimos a WhatsApp. Debes enviar la captura del pago para que podamos habilitar tu descarga.</p>
                         <div class="mt-6 p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-xl">
-                           <p class="text-xs text-indigo-300">Estamos monitoreando tu Orden #${orderId}...</p>
+                           <p class="text-xs text-indigo-300">Estamos monitoreando tu Orden #${orderId}. Si tienes dudas, escribe al +58 412-1410302.</p>
                         </div>
                     </div>
                 `;
 
-                // 4. Iniciar Polling (cada 5 segundos)
                 checkStatusInterval = setInterval(async () => {
                     try {
                         const statusRes = await fetch(`/api/orders/${orderId}/status`);
                         const statusData = await statusRes.json();
-                        
+
                         if (statusData.status === 'Aprobado') {
                             clearInterval(checkStatusInterval);
                             document.getElementById('loading').classList.add('hidden');
                             document.getElementById('success-view').classList.remove('hidden');
                             document.getElementById('success-view').classList.add('flex');
                             document.getElementById('download-btn').href = '/api/download-course';
-                            
-                            // DISPARAR DESCARGA AUTOMÁTICA
                             window.location.href = '/api/download-course';
-                            
                             sessionStorage.removeItem('premium_cursos_cart');
                         }
                     } catch (err) {
-                        console.error("Error consultando status");
+                        console.error('Error consultando status');
                     }
                 }, 5000);
 
             } catch (error) {
+                if (popup && !popup.closed) popup.close();
                 document.getElementById('loading').classList.add('hidden');
-                document.getElementById('error-msg').textContent = "Error al procesar. Intenta nuevamente.";
-                document.getElementById('error-msg').classList.remove('hidden');
+                errorMsg.textContent = 'Error al procesar. Intenta nuevamente.';
+                errorMsg.classList.remove('hidden');
             }
         }
     </script>
