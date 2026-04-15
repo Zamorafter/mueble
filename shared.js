@@ -6,7 +6,7 @@
 const DEFAULT_PRODUCTS = [
     { id: 1, name: 'Experto en Importación y Exportación', desc: 'Aprende los secretos del comercio marítimo, gestión de contenedores y logística internacional.', price: 5, img: 'https://images.unsplash.com/photo-1586528116311-ad8ed745d44c?q=80&w=800&auto=format&fit=crop', category: 'Logística' },
     { id: 2, name: 'Gestión Aduanera Completa', desc: 'Documentación de aduanas, aranceles, incoterms y regulaciones requeridas para importación aérea y marítima.', price: 5, img: 'https://images.unsplash.com/photo-1494412574643-ff11b0a5c1c3?q=80&w=800&auto=format&fit=crop', category: 'Aduanas' },
-    { id: 3, name: 'Exportar desde China Paso a Paso', desc: 'Descubre proveedores, domina Alibaba, incoterms LCL/FCL y negocia con seguridad. Incluye manual PDF actualizado para Venezuela.', price: 5, img: 'https://images.unsplash.com/photo-1578575437130-527eed3abbec?q=80&w=800&auto=format&fit=crop', category: 'Mercados' },
+    { id: 3, name: 'Exportar desde China Paso a Paso', desc: 'Descubre proveedores, domina Alibaba, incoterms LCL/FCL y negocia con seguridad.', price: 5, img: 'https://images.unsplash.com/photo-1578575437130-527eed3abbec?q=80&w=800&auto=format&fit=crop', category: 'Mercados' },
 ];
 
 function getProducts() {
@@ -107,13 +107,6 @@ function processCheckout() {
 function productCardHTML(p) {
     const safeName = p.name.replace(/'/g, "\\'");
     const safeDesc = p.desc.replace(/'/g, "\\'");
-    const chinaManualLink = p.id === 3
-        ? `
-            <a href="EXPORTACION_DESDE_CHINA_HACIA_VENEZUELA_MANUAL_PASO_A_PASO.pdf" download class="block w-full text-center mt-3 bg-indigo-500/15 text-indigo-300 py-3 rounded-2xl text-[10px] uppercase font-bold tracking-[0.2em] border border-indigo-500/30 hover:bg-indigo-500/25 transition-colors">
-                Descargar Manual PDF
-            </a>
-          `
-        : '';
     return `
     <div class="glass-card rounded-3xl overflow-hidden group">
         <div class="relative overflow-hidden aspect-[4/3]">
@@ -132,7 +125,6 @@ function productCardHTML(p) {
         <div class="p-6">
             <h3 class="text-xl font-heading text-white mb-2 group-hover:text-indigo-400 transition-colors">${p.name}</h3>
             <p class="text-zinc-500 font-light text-xs leading-relaxed line-clamp-2">${p.desc}</p>
-            ${chinaManualLink}
         </div>
     </div>`;
 }
